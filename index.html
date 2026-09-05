@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-deep: #14161f;
+    --bg-deep: #0d0f16;
     --bg-card: #1c1e29;
     --bg-card-2: #21232f;
     --ink: #e9e4d9;
@@ -35,10 +35,6 @@
 
   body {
     min-height: 100vh;
-    background:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,162,75,0.07), transparent 60%),
-      radial-gradient(ellipse 60% 40% at 10% 100%, rgba(95,156,143,0.05), transparent 60%),
-      var(--bg-deep);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -47,14 +43,9 @@
 
   /* ---------- gate screen ---------- */
   .gate-overlay {
-    position: fixed;
-    inset: 0;
-    background: var(--bg-deep);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    padding: 26px;
+    position: fixed; inset: 0; background: var(--bg-deep);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 26px;
   }
   .gate-box { width: 100%; max-width: 340px; text-align: center; }
   .gate-mark { font-family: 'Karla', sans-serif; font-size: 13px; letter-spacing: 0.14em; color: var(--gold); font-weight: 600; margin-bottom: 18px; }
@@ -71,66 +62,104 @@
 
   /* ---------- flower screen ---------- */
   .flower-screen {
-    width: 100%;
-    max-width: 460px;
-    padding: 44px 26px 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    width: 100%; max-width: 460px; padding: 0 20px;
+    display: flex; flex-direction: column; align-items: center;
     transition: opacity 0.5s ease, transform 0.5s ease;
   }
-  .flower-screen.collapsing {
-    opacity: 0;
-    transform: scale(0.85);
+  .flower-screen.collapsing { opacity: 0; transform: scale(0.9); }
+
+  .flower-title { font-family: 'Karla', sans-serif; font-size: 13px; letter-spacing: 0.14em; color: var(--gold); font-weight: 600; margin-bottom: 4px; text-align: center; }
+  .flower-sub { font-family: 'Karla', sans-serif; font-size: 12.5px; color: var(--ink-faint); margin-bottom: 20px; text-align: center; }
+
+  .flower-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 1086 / 1448;
+    border-radius: 18px;
+    overflow: hidden;
   }
-  .flower-title {
-    font-family: 'Karla', sans-serif;
-    font-size: 13px;
-    letter-spacing: 0.14em;
-    color: var(--gold);
-    font-weight: 600;
-    margin-bottom: 4px;
+  .flower-wrap img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
   }
-  .flower-sub {
-    font-family: 'Karla', sans-serif;
-    font-size: 13px;
-    color: var(--ink-faint);
-    margin-bottom: 28px;
-  }
-  .flower-svg-wrap { width: 100%; max-width: 360px; }
-  .petal-node { cursor: pointer; }
-  .petal-node.locked { cursor: default; }
-  .petal-node text { font-family: 'Karla', sans-serif; font-weight: 600; }
-  .flower-legend {
+
+  .petal-btn {
+    position: absolute;
+    width: 11%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
     display: flex;
-    gap: 18px;
-    margin-top: 24px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .petal-btn.center { width: 13%; }
+  .petal-btn.locked { cursor: default; }
+
+  .petal-number {
     font-family: 'Karla', sans-serif;
-    font-size: 11.5px;
-    color: var(--ink-faint);
+    font-weight: 600;
+    color: rgba(233, 228, 217, 0.85);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    font-size: clamp(11px, 3.2vw, 15px);
+    pointer-events: none;
+  }
+  .petal-btn.locked .petal-number { color: rgba(233, 228, 217, 0.25); }
+
+  .petal-dim {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: rgba(13, 15, 22, 0.55);
+    pointer-events: none;
+  }
+
+  .petal-glow {
+    position: absolute; inset: -18%; border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--gold), 0 0 22px 6px rgba(201,162,75,0.55);
+    pointer-events: none;
+    animation: petalPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes petalPulse {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
+
+  .petal-check {
+    position: absolute;
+    bottom: 2%;
+    right: 2%;
+    width: 22%;
+    aspect-ratio: 1;
+    background: var(--teal);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    box-shadow: 0 0 0 2px var(--bg-deep);
+  }
+  .petal-check svg { width: 55%; height: 55%; }
+
+  .flower-legend {
+    display: flex; gap: 16px; margin-top: 20px;
+    font-family: 'Karla', sans-serif; font-size: 11px; color: var(--ink-faint);
+    flex-wrap: wrap; justify-content: center;
   }
 
   /* ---------- day card screen ---------- */
-  .page {
-    width: 100%;
-    max-width: 460px;
-    padding: 20px 26px 0;
-    transition: opacity 0.4s ease;
-  }
+  .page { width: 100%; max-width: 460px; padding: 20px 26px 0; transition: opacity 0.4s ease; }
 
   .back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: none;
-    border: 1px solid var(--hairline);
-    border-radius: 20px;
-    color: var(--ink-soft);
-    font-family: 'Karla', sans-serif;
-    font-size: 12.5px;
-    padding: 7px 14px;
-    cursor: pointer;
-    margin-bottom: 30px;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: 1px solid var(--hairline); border-radius: 20px;
+    color: var(--ink-soft); font-family: 'Karla', sans-serif; font-size: 12.5px;
+    padding: 7px 14px; cursor: pointer; margin-bottom: 30px;
   }
   .back-btn:hover { border-color: var(--gold-soft); color: var(--ink); }
 
@@ -180,7 +209,6 @@
 </head>
 <body>
 
-<!-- ===== ЭКРАН ВВОДА КОДА ===== -->
 <div class="gate-overlay" id="gateOverlay">
   <div class="gate-box">
     <div class="gate-mark">13 M✳RRORS</div>
@@ -192,13 +220,12 @@
   </div>
 </div>
 
-<!-- ===== ЭКРАН ЦВЕТКА ===== -->
 <div class="flower-screen hidden" id="flowerScreen">
   <div class="flower-title">13 M✳RRORS</div>
   <div class="flower-sub">Размораживаем детство · твой маршрут</div>
-  <div class="flower-svg-wrap">
-    <svg id="flowerSvg" viewBox="0 0 360 360" style="width:100%; height:auto;">
-    </svg>
+  <div class="flower-wrap">
+    <img src="flower-bg.png" alt="Маршрут 13 дней">
+    <div id="petalsLayer"></div>
   </div>
   <div class="flower-legend">
     <span>● пройден</span>
@@ -207,7 +234,6 @@
   </div>
 </div>
 
-<!-- ===== ЭКРАН КАРТОЧКИ ДНЯ ===== -->
 <div class="page hidden" id="pageContent">
   <button class="back-btn" id="backToFlowerBtn">13− назад к маршруту</button>
 
@@ -286,51 +312,57 @@
     </footer>
   </div>
 
-  <!-- заглушка для дней, у которых пока нет готового контента -->
   <div id="placeholderCard" class="hidden" style="text-align:center; padding: 60px 0;">
     <p style="font-family:'Karla',sans-serif; color: var(--ink-soft); font-size: 15px;">Содержание этого дня появится позже.</p>
   </div>
 </div>
 
 <script>
-  // ============================================================
-  // НАСТРОЙКА: те же значения, что вы уже вставляли в прошлый файл
-  // ============================================================
-  const SUPABASE_URL = 'https://mtqqkgojrepdhbqkbqic.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable__oUSc-S0xZEDvWgcGubYxQ_F5KjbQ4j';
-  // ============================================================
-
-  // ---------- надёжная загрузка библиотеки: пробуем несколько источников по очереди ----------
   const LIBRARY_SOURCES = [
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
     'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js'
   ];
 
+  // ============================================================
+  const SUPABASE_URL = 'https://mtqqkgojrepdhbqkbqic.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable__oUSc-S0xZEDvWgcGubYxQ_F5KjbQ4j';
+  // ============================================================
+
+  // координаты центров лепестков (в процентах от ширины/высоты картинки)
+  const PETAL_POSITIONS = {
+    1:  { x: 50.5, y: 25.5 },
+    2:  { x: 67.5, y: 29.0 },
+    3:  { x: 81.5, y: 36.5 },
+    4:  { x: 85.5, y: 49.0 },
+    5:  { x: 81.0, y: 62.5 },
+    6:  { x: 67.5, y: 70.0 },
+    7:  { x: 51.0, y: 73.5 },
+    8:  { x: 33.5, y: 69.5 },
+    9:  { x: 19.5, y: 62.5 },
+    10: { x: 14.5, y: 49.0 },
+    11: { x: 19.5, y: 36.0 },
+    12: { x: 33.5, y: 28.5 },
+    13: { x: 50.5, y: 50.0 }
+  };
+
   function loadScript(src) {
     return new Promise((resolve, reject) => {
       const s = document.createElement('script');
-      s.src = src;
-      s.onload = resolve;
-      s.onerror = reject;
+      s.src = src; s.onload = resolve; s.onerror = reject;
       document.head.appendChild(s);
     });
   }
-
-  async function loadSupabaseLibrary() {
+  async function ensureLibrary() {
+    if (window.supabase) return true;
     for (const src of LIBRARY_SOURCES) {
-      try {
-        await loadScript(src);
-        if (window.supabase) return true;
-      } catch (e) {
-        // пробуем следующий источник
-      }
+      try { await loadScript(src); if (window.supabase) return true; } catch (e) {}
     }
     return false;
   }
 
   (async () => {
-    const loaded = await loadSupabaseLibrary();
-    if (!loaded) {
+    const ok = await ensureLibrary();
+    if (!ok) {
       document.getElementById('gateError').textContent =
         'Не удаётся связаться с сервером. Проверьте интернет-соединение и обновите страницу.';
       document.getElementById('gateBtn').disabled = true;
@@ -349,7 +381,7 @@
   const gateError = document.getElementById('gateError');
 
   const flowerScreen = document.getElementById('flowerScreen');
-  const flowerSvg = document.getElementById('flowerSvg');
+  const petalsLayer = document.getElementById('petalsLayer');
   const pageContent = document.getElementById('pageContent');
   const day1Card = document.getElementById('day1Card');
   const placeholderCard = document.getElementById('placeholderCard');
@@ -367,94 +399,54 @@
 
   const CODE_STORAGE_KEY = '13mirrors-participant-code';
   let currentParticipantId = null;
-  let currentOpenDay = 1;       // какой день сейчас открыт для всех (route_state)
-  let completedDays = new Set(); // какие дни прошёл именно этот участник
-  let openedDayNumber = null;    // какой день сейчас показан в карточке
+  let currentOpenDay = 1;
+  let completedDays = new Set();
+  let openedDayNumber = null;
 
-  // ---------- цветок: рисуем 12 лучей + центр (13) ----------
   function renderFlower() {
-    flowerSvg.innerHTML = '';
-    const cx = 180, cy = 180, innerR = 32, outerR = 140, nodeR = 22;
-    const total = 12;
+    petalsLayer.innerHTML = '';
+    for (let day = 1; day <= 13; day++) {
+      const pos = PETAL_POSITIONS[day];
+      const isLocked = day > currentOpenDay;
+      const isDone = completedDays.has(day);
+      const isToday = day === currentOpenDay;
 
-    for (let i = 0; i < total; i++) {
-      const dayNum = i + 1;
-      const angleDeg = (i / total) * 360 - 90;
-      const angleRad = angleDeg * Math.PI / 180;
+      const btn = document.createElement('button');
+      btn.className = 'petal-btn' + (day === 13 ? ' center' : '') + (isLocked ? ' locked' : '');
+      btn.style.left = pos.x + '%';
+      btn.style.top = pos.y + '%';
+      btn.setAttribute('aria-label', 'День ' + day);
 
-      const isLocked = dayNum > currentOpenDay;
-      const isDone = completedDays.has(dayNum);
-      const isToday = dayNum === currentOpenDay;
+      if (isToday) {
+        const glow = document.createElement('div');
+        glow.className = 'petal-glow';
+        btn.appendChild(glow);
+      }
+      if (isLocked) {
+        const dim = document.createElement('div');
+        dim.className = 'petal-dim';
+        btn.appendChild(dim);
+      }
 
-      const x1 = cx + innerR * Math.cos(angleRad);
-      const y1 = cy + innerR * Math.sin(angleRad);
-      const x2 = cx + outerR * Math.cos(angleRad);
-      const y2 = cy + outerR * Math.sin(angleRad);
+      const num = document.createElement('span');
+      num.className = 'petal-number';
+      num.textContent = day;
+      btn.appendChild(num);
 
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', x1); line.setAttribute('y1', y1);
-      line.setAttribute('x2', x2); line.setAttribute('y2', y2);
-      line.setAttribute('stroke', 'var(--hairline)');
-      line.setAttribute('stroke-width', '1.5');
-      flowerSvg.appendChild(line);
-
-      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      g.setAttribute('class', 'petal-node' + (isLocked ? ' locked' : ''));
-
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      circle.setAttribute('cx', x2); circle.setAttribute('cy', y2); circle.setAttribute('r', nodeR);
-      let fill = 'var(--bg-card-2)';
-      let stroke = 'var(--hairline)';
-      if (isDone) { fill = 'var(--teal)'; stroke = 'var(--teal)'; }
-      if (isToday) { stroke = 'var(--gold)'; }
-      circle.setAttribute('fill', fill);
-      circle.setAttribute('stroke', stroke);
-      circle.setAttribute('stroke-width', isToday ? '2' : '1');
-      circle.setAttribute('opacity', isLocked ? '0.35' : '1');
-      g.appendChild(circle);
-
-      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      label.setAttribute('x', x2); label.setAttribute('y', y2 + 4);
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('fill', isLocked ? 'var(--ink-faint)' : 'var(--ink)');
-      label.setAttribute('style', 'font-size:13px;');
-      label.textContent = dayNum;
-      g.appendChild(label);
+      if (isDone) {
+        const check = document.createElement('div');
+        check.className = 'petal-check';
+        check.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        btn.appendChild(check);
+      }
 
       if (!isLocked) {
-        g.addEventListener('click', () => openDay(dayNum));
+        btn.addEventListener('click', () => openDay(day));
       }
-      flowerSvg.appendChild(g);
+      petalsLayer.appendChild(btn);
     }
-
-    // центр — день 13
-    const isCenterLocked = 13 > currentOpenDay;
-    const isCenterDone = completedDays.has(13);
-    const centerG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    centerG.setAttribute('class', 'petal-node' + (isCenterLocked ? ' locked' : ''));
-    const centerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    centerCircle.setAttribute('cx', cx); centerCircle.setAttribute('cy', cy); centerCircle.setAttribute('r', 34);
-    centerCircle.setAttribute('fill', isCenterDone ? 'var(--teal)' : 'var(--bg-card-2)');
-    centerCircle.setAttribute('stroke', currentOpenDay === 13 ? 'var(--gold)' : 'var(--hairline)');
-    centerCircle.setAttribute('stroke-width', currentOpenDay === 13 ? '2' : '1');
-    centerCircle.setAttribute('opacity', isCenterLocked ? '0.35' : '1');
-    centerG.appendChild(centerCircle);
-
-    const centerLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    centerLabel.setAttribute('x', cx); centerLabel.setAttribute('y', cy + 4);
-    centerLabel.setAttribute('text-anchor', 'middle');
-    centerLabel.setAttribute('fill', isCenterLocked ? 'var(--ink-faint)' : 'var(--ink)');
-    centerLabel.setAttribute('style', 'font-size:14px;');
-    centerLabel.textContent = '13';
-    centerG.appendChild(centerLabel);
-
-    if (!isCenterLocked) {
-      centerG.addEventListener('click', () => openDay(13));
-    }
-    flowerSvg.appendChild(centerG);
   }
 
-  // ---------- переключение экранов ----------
   function showFlower() {
     pageContent.classList.add('hidden');
     flowerScreen.classList.remove('hidden', 'collapsing');
@@ -493,7 +485,6 @@
     showFlower();
   });
 
-  // ---------- логика карт дня 1 (без изменений по сути) ----------
   function chooseCard(letter) {
     const chosenSlot = letter === 'A' ? slotA : slotB;
     const otherSlot = letter === 'A' ? slotB : slotA;
@@ -544,7 +535,6 @@
       saveStatus.classList.add('ok');
       completedDays.add(openedDayNumber);
 
-      // через пару секунд сами возвращаемся к цветку
       setTimeout(() => {
         pageContent.classList.add('hidden');
         showFlower();
@@ -570,7 +560,6 @@
     }
   }
 
-  // ---------- вход по коду (как в прошлом файле) ----------
   async function claimCode(code) {
     let { data: sessionData } = await supabaseClient.auth.getSession();
     if (!sessionData.session) {
