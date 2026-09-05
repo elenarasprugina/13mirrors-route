@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ru" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>13 MIRRORS · Маршрут</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #14161f;
+    --bg-card: #1c1e29;
+    --bg-card-2: #21232f;
+    --ink: #e9e4d9;
+    --ink-soft: #a9a5b8;
+    --ink-faint: #6d6a80;
+    --gold: #c9a24b;
+    --gold-soft: rgba(201, 162, 75, 0.35);
+    --teal: #5f9c8f;
+    --dusk-blue: #7186a8;
+    --hairline: rgba(233, 228, 217, 0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-deep);
+    color: var(--ink);
+    font-family: 'Lora', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,162,75,0.07), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 10% 100%, rgba(95,156,143,0.05), transparent 60%),
+      var(--bg-deep);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 0;
+  }
+
+  /* ---------- gate screen ---------- */
+  .gate-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 26px;
+  }
+  .gate-box { width: 100%; max-width: 340px; text-align: center; }
+  .gate-mark { font-family: 'Karla', sans-serif; font-size: 13px; letter-spacing: 0.14em; color: var(--gold); font-weight: 600; margin-bottom: 18px; }
+  .gate-title { font-family: 'Karla', sans-serif; font-size: 18px; font-weight: 500; color: var(--ink); margin: 0 0 10px; }
+  .gate-sub { font-family: 'Karla', sans-serif; font-size: 13.5px; color: var(--ink-soft); margin: 0 0 28px; line-height: 1.5; }
+  .gate-input { width: 100%; background: var(--bg-card); border: 1px solid var(--hairline); border-radius: 8px; color: var(--ink); font-family: 'Karla', sans-serif; font-size: 16px; letter-spacing: 0.05em; text-align: center; padding: 14px; outline: none; text-transform: uppercase; margin-bottom: 14px; }
+  .gate-input:focus { border-color: var(--gold-soft); }
+  .gate-input::placeholder { text-transform: none; color: var(--ink-faint); }
+  .gate-btn { width: 100%; font-family: 'Karla', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.03em; color: var(--bg-deep); background: var(--gold); border: none; border-radius: 7px; padding: 13px 20px; cursor: pointer; transition: filter 0.2s; }
+  .gate-btn:hover { filter: brightness(1.08); }
+  .gate-btn:disabled { opacity: 0.5; cursor: default; }
+  .gate-error { font-family: 'Karla', sans-serif; font-size: 12.5px; color: #d97b6c; margin-top: 12px; min-height: 16px; }
+  .hidden { display: none !important; }
+
+  /* ---------- flower screen ---------- */
+  .flower-screen {
+    width: 100%;
+    max-width: 460px;
+    padding: 44px 26px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .flower-screen.collapsing {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  .flower-title {
+    font-family: 'Karla', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .flower-sub {
+    font-family: 'Karla', sans-serif;
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-bottom: 28px;
+  }
+  .flower-svg-wrap { width: 100%; max-width: 360px; }
+  .petal-node { cursor: pointer; }
+  .petal-node.locked { cursor: default; }
+  .petal-node text { font-family: 'Karla', sans-serif; font-weight: 600; }
+  .flower-legend {
+    display: flex;
+    gap: 18px;
+    margin-top: 24px;
+    font-family: 'Karla', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- day card screen ---------- */
+  .page {
+    width: 100%;
+    max-width: 460px;
+    padding: 20px 26px 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid var(--hairline);
+    border-radius: 20px;
+    color: var(--ink-soft);
+    font-family: 'Karla', sans-serif;
+    font-size: 12.5px;
+    padding: 7px 14px;
+    cursor: pointer;
+    margin-bottom: 30px;
+  }
+  .back-btn:hover { border-color: var(--gold-soft); color: var(--ink); }
+
+  .eyebrow { font-family: 'Karla', sans-serif; font-size: 12.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 10px; }
+  h1 { font-family: 'Karla', sans-serif; font-weight: 600; font-size: 24px; letter-spacing: 0.01em; color: var(--ink); margin: 0 0 6px; line-height: 1.3; }
+  .subline { font-family: 'Karla', sans-serif; font-size: 13.5px; color: var(--gold); letter-spacing: 0.04em; margin: 0 0 34px; }
+  section { margin-bottom: 40px; }
+  .label { font-family: 'Karla', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 12px; position: relative; padding-bottom: 10px; }
+  .label::after { content: ""; position: absolute; left: 0; bottom: 0; width: 30px; height: 2px; background: var(--accent-line, var(--teal)); }
+  .label.gold::after { background: var(--gold); }
+  p.body-text { font-size: 16px; line-height: 1.65; color: var(--ink); margin: 0 0 14px; }
+  p.body-text:last-child { margin-bottom: 0; }
+  p.body-text b { color: var(--gold); font-weight: 500; }
+  .thought { font-style: italic; font-size: 21px; line-height: 1.55; color: #d9d4ea; margin: 0; }
+  .cards-row { display: flex; gap: 14px; }
+  .card-slot { flex: 1; perspective: 1000px; height: 190px; }
+  .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.7s cubic-bezier(.4,.2,.2,1); transform-style: preserve-3d; }
+  .card-slot.revealed .card-inner { transform: rotateY(180deg); }
+  .card-face { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 10px; padding: 18px 16px; display: flex; flex-direction: column; }
+  .card-back { background: linear-gradient(160deg, var(--bg-card-2), var(--bg-card)); border: 1px solid var(--hairline); cursor: pointer; align-items: center; justify-content: center; text-align: center; transition: border-color 0.25s; }
+  .card-back:hover { border-color: var(--gold-soft); }
+  .card-slot.locked .card-back { cursor: default; opacity: 0.35; }
+  .card-slot.locked .card-back:hover { border-color: var(--hairline); }
+  .seal { width: 40px; height: 40px; margin-bottom: 14px; }
+  .card-back .letter { font-family: 'Karla', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.1em; color: var(--ink-soft); }
+  .card-back .hint { font-family: 'Karla', sans-serif; font-size: 11px; color: var(--ink-faint); margin-top: 8px; line-height: 1.4; }
+  .card-front { background: var(--bg-card); border: 1px solid var(--gold-soft); transform: rotateY(180deg); overflow-y: auto; }
+  .card-front .letter { font-family: 'Karla', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 8px; }
+  .card-front p { font-size: 14.5px; line-height: 1.5; color: var(--ink); margin: 0; }
+  .reset-link { display: block; margin-top: 16px; font-family: 'Karla', sans-serif; font-size: 12px; color: var(--ink-faint); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; background: none; border: none; padding: 0; }
+  .reset-link:hover { color: var(--ink-soft); }
+  .reflection { opacity: 0; max-height: 0; overflow: hidden; transition: opacity 0.5s ease, max-height 0.6s ease; }
+  .reflection.open { opacity: 1; max-height: 600px; }
+  .reflection-question { font-size: 15.5px; line-height: 1.55; color: var(--ink-soft); margin: 0 0 16px; }
+  textarea { width: 100%; min-height: 100px; background: var(--bg-card); border: 1px solid var(--hairline); border-radius: 8px; color: var(--ink); font-family: 'Lora', Georgia, serif; font-size: 15px; line-height: 1.55; padding: 14px; resize: vertical; outline: none; transition: border-color 0.2s; }
+  textarea:focus { border-color: var(--gold-soft); }
+  textarea::placeholder { color: var(--ink-faint); }
+  .save-row { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+  .save-btn { font-family: 'Karla', sans-serif; font-size: 13.5px; font-weight: 600; letter-spacing: 0.03em; color: var(--bg-deep); background: var(--gold); border: none; border-radius: 7px; padding: 11px 20px; cursor: pointer; transition: filter 0.2s; }
+  .save-btn:hover { filter: brightness(1.08); }
+  .save-btn:disabled { opacity: 0.5; cursor: default; }
+  .save-status { font-family: 'Karla', sans-serif; font-size: 12.5px; color: var(--ink-faint); }
+  .save-status.ok { color: var(--teal); }
+  footer { display: flex; align-items: center; justify-content: center; gap: 6px; padding-top: 20px; border-top: 1px solid var(--hairline); }
+  footer .mark { font-family: 'Karla', sans-serif; font-size: 12px; letter-spacing: 0.12em; color: var(--gold); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ===== ЭКРАН ВВОДА КОДА ===== -->
+<div class="gate-overlay" id="gateOverlay">
+  <div class="gate-box">
+    <div class="gate-mark">13 M✳RRORS</div>
+    <p class="gate-title">Введите ваш код</p>
+    <p class="gate-sub">Персональный код был выслан вам в Telegram. Он нужен, чтобы сайт запомнил именно ваши записи.</p>
+    <input type="text" class="gate-input" id="gateInput" placeholder="MIRROR-XXXX" autocomplete="off">
+    <button class="gate-btn" id="gateBtn">Войти</button>
+    <p class="gate-error" id="gateError"></p>
+  </div>
+</div>
+
+<!-- ===== ЭКРАН ЦВЕТКА ===== -->
+<div class="flower-screen hidden" id="flowerScreen">
+  <div class="flower-title">13 M✳RRORS</div>
+  <div class="flower-sub">Размораживаем детство · твой маршрут</div>
+  <div class="flower-svg-wrap">
+    <svg id="flowerSvg" viewBox="0 0 360 360" style="width:100%; height:auto;">
+    </svg>
+  </div>
+  <div class="flower-legend">
+    <span>● пройден</span>
+    <span>● сегодня</span>
+    <span>○ закрыт</span>
+  </div>
+</div>
+
+<!-- ===== ЭКРАН КАРТОЧКИ ДНЯ ===== -->
+<div class="page hidden" id="pageContent">
+  <button class="back-btn" id="backToFlowerBtn">13− назад к маршруту</button>
+
+  <div id="day1Card">
+    <p class="eyebrow">Размораживаем детство · 13 MIRRORS</p>
+    <h1>День 1 · Белый Волшебник</h1>
+    <p class="subline">Кин 14 · Тон 1 — Магнитный</p>
+
+    <section>
+      <p class="label" style="--accent-line: var(--teal)">Контур дня</p>
+      <p class="body-text"><b>Притяжение.</b> Магнитный тон задаёт направление всему, что случится в следующие тринадцать дней — не через план, а через то, к чему тянет без объяснений.</p>
+      <p class="body-text">Белый Волшебник — печать очарованности и безвременности. Его сила не в действии, а в том, чтобы быть достаточно открытым, чтобы мир мог пройти сквозь тебя не искажённым.</p>
+      <p class="body-text">Сегодня не нужно ничего решать. Нужно только заметить, что уже тянет — и довериться этому без причины.</p>
+    </section>
+
+    <section>
+      <p class="label gold">Мысль дня</p>
+      <p class="thought">То, что тянет без причины, уже что-то знает.</p>
+    </section>
+
+    <section>
+      <p class="label" style="--accent-line: var(--dusk-blue)">Практика</p>
+      <p class="body-text" style="margin-bottom:18px; color: var(--ink-soft); font-size: 14.5px;">Две карты. Обе закрыты. Выбери ту, что откликается — не читая заранее, что внутри.</p>
+
+      <div class="cards-row" id="cardsRow">
+        <div class="card-slot" id="slotA" data-card="A">
+          <div class="card-inner">
+            <div class="card-face card-back" id="backA">
+              <svg class="seal" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="18" stroke="#8b7a45" stroke-width="1"/>
+                <path d="M20 8 L22.5 17.5 L32 20 L22.5 22.5 L20 32 L17.5 22.5 L8 20 L17.5 17.5 Z" stroke="#c9a24b" stroke-width="1"/>
+              </svg>
+              <div class="letter">КАРТА А</div>
+              <div class="hint">нажми, если&nbsp;откликается</div>
+            </div>
+            <div class="card-face card-front">
+              <div class="letter">КАРТА А</div>
+              <p>Найди сегодня что-то, что необъяснимо притягивает — без причины, без «зачем». Возьми это с собой. Не объясняй себе, зачем.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-slot" id="slotB" data-card="B">
+          <div class="card-inner">
+            <div class="card-face card-back" id="backB">
+              <svg class="seal" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="18" stroke="#8b7a45" stroke-width="1"/>
+                <path d="M20 8 L22.5 17.5 L32 20 L22.5 22.5 L20 32 L17.5 22.5 L8 20 L17.5 17.5 Z" stroke="#c9a24b" stroke-width="1"/>
+              </svg>
+              <div class="letter">КАРТА Б</div>
+              <div class="hint">нажми, если&nbsp;откликается</div>
+            </div>
+            <div class="card-face card-front">
+              <div class="letter">КАРТА Б</div>
+              <p>Позволь себе несколько минут ничего не решать и не делать. Просто заметь, куда сами идут глаза, когда никуда не нужно спешить.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="reset-link" id="resetLink" style="display:none;">выбрать другую карту</button>
+    </section>
+
+    <section class="reflection" id="reflectionBlock">
+      <p class="label gold">След дня</p>
+      <p class="reflection-question">Что ты нашёл(ла) — или заметил(а)? Что почувствовал(а) в теле в этот момент?</p>
+      <textarea id="reflectionText" placeholder="Можно коротко, можно без объяснений."></textarea>
+      <div class="save-row">
+        <button class="save-btn" id="saveBtn">Сохранить след</button>
+        <span class="save-status" id="saveStatus"></span>
+      </div>
+    </section>
+
+    <footer>
+      <span class="mark">13 M✳RRORS</span>
+    </footer>
+  </div>
+
+  <!-- заглушка для дней, у которых пока нет готового контента -->
+  <div id="placeholderCard" class="hidden" style="text-align:center; padding: 60px 0;">
+    <p style="font-family:'Karla',sans-serif; color: var(--ink-soft); font-size: 15px;">Содержание этого дня появится позже.</p>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // НАСТРОЙКА: те же значения, что вы уже вставляли в прошлый файл
+  // ============================================================
+  const SUPABASE_URL = 'https://mtqqkgojrepdhbqkbqic.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable__oUSc-S0xZEDvWgcGubYxQ_F5KjbQ4j';
+  // ============================================================
+
+  // ---------- надёжная загрузка библиотеки: пробуем несколько источников по очереди ----------
+  const LIBRARY_SOURCES = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js'
+  ];
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function loadSupabaseLibrary() {
+    for (const src of LIBRARY_SOURCES) {
+      try {
+        await loadScript(src);
+        if (window.supabase) return true;
+      } catch (e) {
+        // пробуем следующий источник
+      }
+    }
+    return false;
+  }
+
+  (async () => {
+    const loaded = await loadSupabaseLibrary();
+    if (!loaded) {
+      document.getElementById('gateError').textContent =
+        'Не удаётся связаться с сервером. Проверьте интернет-соединение и обновите страницу.';
+      document.getElementById('gateBtn').disabled = true;
+      return;
+    }
+    initApp();
+  })();
+
+  function initApp() {
+
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const gateOverlay = document.getElementById('gateOverlay');
+  const gateInput = document.getElementById('gateInput');
+  const gateBtn = document.getElementById('gateBtn');
+  const gateError = document.getElementById('gateError');
+
+  const flowerScreen = document.getElementById('flowerScreen');
+  const flowerSvg = document.getElementById('flowerSvg');
+  const pageContent = document.getElementById('pageContent');
+  const day1Card = document.getElementById('day1Card');
+  const placeholderCard = document.getElementById('placeholderCard');
+  const backToFlowerBtn = document.getElementById('backToFlowerBtn');
+
+  const slotA = document.getElementById('slotA');
+  const slotB = document.getElementById('slotB');
+  const backA = document.getElementById('backA');
+  const backB = document.getElementById('backB');
+  const resetLink = document.getElementById('resetLink');
+  const reflectionBlock = document.getElementById('reflectionBlock');
+  const reflectionText = document.getElementById('reflectionText');
+  const saveBtn = document.getElementById('saveBtn');
+  const saveStatus = document.getElementById('saveStatus');
+
+  const CODE_STORAGE_KEY = '13mirrors-participant-code';
+  let currentParticipantId = null;
+  let currentOpenDay = 1;       // какой день сейчас открыт для всех (route_state)
+  let completedDays = new Set(); // какие дни прошёл именно этот участник
+  let openedDayNumber = null;    // какой день сейчас показан в карточке
+
+  // ---------- цветок: рисуем 12 лучей + центр (13) ----------
+  function renderFlower() {
+    flowerSvg.innerHTML = '';
+    const cx = 180, cy = 180, innerR = 32, outerR = 140, nodeR = 22;
+    const total = 12;
+
+    for (let i = 0; i < total; i++) {
+      const dayNum = i + 1;
+      const angleDeg = (i / total) * 360 - 90;
+      const angleRad = angleDeg * Math.PI / 180;
+
+      const isLocked = dayNum > currentOpenDay;
+      const isDone = completedDays.has(dayNum);
+      const isToday = dayNum === currentOpenDay;
+
+      const x1 = cx + innerR * Math.cos(angleRad);
+      const y1 = cy + innerR * Math.sin(angleRad);
+      const x2 = cx + outerR * Math.cos(angleRad);
+      const y2 = cy + outerR * Math.sin(angleRad);
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+      line.setAttribute('stroke', 'var(--hairline)');
+      line.setAttribute('stroke-width', '1.5');
+      flowerSvg.appendChild(line);
+
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'petal-node' + (isLocked ? ' locked' : ''));
+
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', x2); circle.setAttribute('cy', y2); circle.setAttribute('r', nodeR);
+      let fill = 'var(--bg-card-2)';
+      let stroke = 'var(--hairline)';
+      if (isDone) { fill = 'var(--teal)'; stroke = 'var(--teal)'; }
+      if (isToday) { stroke = 'var(--gold)'; }
+      circle.setAttribute('fill', fill);
+      circle.setAttribute('stroke', stroke);
+      circle.setAttribute('stroke-width', isToday ? '2' : '1');
+      circle.setAttribute('opacity', isLocked ? '0.35' : '1');
+      g.appendChild(circle);
+
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', x2); label.setAttribute('y', y2 + 4);
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('fill', isLocked ? 'var(--ink-faint)' : 'var(--ink)');
+      label.setAttribute('style', 'font-size:13px;');
+      label.textContent = dayNum;
+      g.appendChild(label);
+
+      if (!isLocked) {
+        g.addEventListener('click', () => openDay(dayNum));
+      }
+      flowerSvg.appendChild(g);
+    }
+
+    // центр — день 13
+    const isCenterLocked = 13 > currentOpenDay;
+    const isCenterDone = completedDays.has(13);
+    const centerG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    centerG.setAttribute('class', 'petal-node' + (isCenterLocked ? ' locked' : ''));
+    const centerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    centerCircle.setAttribute('cx', cx); centerCircle.setAttribute('cy', cy); centerCircle.setAttribute('r', 34);
+    centerCircle.setAttribute('fill', isCenterDone ? 'var(--teal)' : 'var(--bg-card-2)');
+    centerCircle.setAttribute('stroke', currentOpenDay === 13 ? 'var(--gold)' : 'var(--hairline)');
+    centerCircle.setAttribute('stroke-width', currentOpenDay === 13 ? '2' : '1');
+    centerCircle.setAttribute('opacity', isCenterLocked ? '0.35' : '1');
+    centerG.appendChild(centerCircle);
+
+    const centerLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    centerLabel.setAttribute('x', cx); centerLabel.setAttribute('y', cy + 4);
+    centerLabel.setAttribute('text-anchor', 'middle');
+    centerLabel.setAttribute('fill', isCenterLocked ? 'var(--ink-faint)' : 'var(--ink)');
+    centerLabel.setAttribute('style', 'font-size:14px;');
+    centerLabel.textContent = '13';
+    centerG.appendChild(centerLabel);
+
+    if (!isCenterLocked) {
+      centerG.addEventListener('click', () => openDay(13));
+    }
+    flowerSvg.appendChild(centerG);
+  }
+
+  // ---------- переключение экранов ----------
+  function showFlower() {
+    pageContent.classList.add('hidden');
+    flowerScreen.classList.remove('hidden', 'collapsing');
+    renderFlower();
+  }
+
+  function collapseFlowerAndShow(callback) {
+    flowerScreen.classList.add('collapsing');
+    setTimeout(() => {
+      flowerScreen.classList.add('hidden');
+      flowerScreen.classList.remove('collapsing');
+      callback();
+    }, 450);
+  }
+
+  async function openDay(dayNum) {
+    openedDayNumber = dayNum;
+    collapseFlowerAndShow(async () => {
+      pageContent.classList.remove('hidden');
+      if (dayNum === 1) {
+        day1Card.classList.remove('hidden');
+        placeholderCard.classList.add('hidden');
+        resetCards();
+        reflectionText.value = '';
+        saveStatus.textContent = '';
+        await loadExistingEntry(1);
+      } else {
+        day1Card.classList.add('hidden');
+        placeholderCard.classList.remove('hidden');
+      }
+    });
+  }
+
+  backToFlowerBtn.addEventListener('click', () => {
+    pageContent.classList.add('hidden');
+    showFlower();
+  });
+
+  // ---------- логика карт дня 1 (без изменений по сути) ----------
+  function chooseCard(letter) {
+    const chosenSlot = letter === 'A' ? slotA : slotB;
+    const otherSlot = letter === 'A' ? slotB : slotA;
+    chosenSlot.classList.add('revealed');
+    otherSlot.classList.add('locked');
+    resetLink.style.display = 'block';
+    setTimeout(() => { reflectionBlock.classList.add('open'); }, 400);
+  }
+
+  function resetCards() {
+    slotA.classList.remove('revealed', 'locked');
+    slotB.classList.remove('revealed', 'locked');
+    resetLink.style.display = 'none';
+    reflectionBlock.classList.remove('open');
+  }
+
+  backA.addEventListener('click', () => {
+    if (slotB.classList.contains('locked')) return;
+    if (slotA.classList.contains('revealed')) return;
+    chooseCard('A');
+  });
+  backB.addEventListener('click', () => {
+    if (slotA.classList.contains('locked')) return;
+    if (slotB.classList.contains('revealed')) return;
+    chooseCard('B');
+  });
+  resetLink.addEventListener('click', resetCards);
+
+  saveBtn.addEventListener('click', async () => {
+    const chosenCard = slotA.classList.contains('revealed') ? 'A' :
+                        slotB.classList.contains('revealed') ? 'B' : null;
+    saveBtn.disabled = true;
+    saveStatus.textContent = 'сохраняю…';
+    saveStatus.classList.remove('ok');
+    try {
+      const { error } = await supabaseClient
+        .from('entries')
+        .upsert({
+          participant_id: currentParticipantId,
+          day_number: openedDayNumber,
+          chosen_card: chosenCard,
+          reflection_text: reflectionText.value,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'participant_id,day_number' });
+
+      if (error) throw error;
+      saveStatus.textContent = 'сохранено';
+      saveStatus.classList.add('ok');
+      completedDays.add(openedDayNumber);
+
+      // через пару секунд сами возвращаемся к цветку
+      setTimeout(() => {
+        pageContent.classList.add('hidden');
+        showFlower();
+      }, 2000);
+    } catch (e) {
+      saveStatus.textContent = 'не удалось сохранить';
+      console.error(e);
+    }
+    saveBtn.disabled = false;
+  });
+
+  async function loadExistingEntry(dayNum) {
+    const { data, error } = await supabaseClient
+      .from('entries')
+      .select('chosen_card, reflection_text')
+      .eq('participant_id', currentParticipantId)
+      .eq('day_number', dayNum)
+      .maybeSingle();
+
+    if (!error && data) {
+      if (data.reflection_text) reflectionText.value = data.reflection_text;
+      if (data.chosen_card) chooseCard(data.chosen_card);
+    }
+  }
+
+  // ---------- вход по коду (как в прошлом файле) ----------
+  async function claimCode(code) {
+    let { data: sessionData } = await supabaseClient.auth.getSession();
+    if (!sessionData.session) {
+      const { error: authError } = await supabaseClient.auth.signInAnonymously();
+      if (authError) throw authError;
+    }
+    const { data: userData } = await supabaseClient.auth.getUser();
+    const uid = userData.user.id;
+
+    const { data: participant, error: findError } = await supabaseClient
+      .from('participants')
+      .select('id, user_id')
+      .eq('code', code)
+      .maybeSingle();
+
+    if (findError) throw findError;
+    if (!participant) throw new Error('not_found');
+
+    if (!participant.user_id || participant.user_id !== uid) {
+      const { error: claimError } = await supabaseClient
+        .from('participants')
+        .update({ user_id: uid })
+        .eq('id', participant.id);
+      if (claimError) throw claimError;
+    }
+    return participant.id;
+  }
+
+  async function loadRouteState() {
+    const { data } = await supabaseClient
+      .from('route_state')
+      .select('current_day')
+      .eq('id', 1)
+      .maybeSingle();
+    if (data) currentOpenDay = data.current_day;
+  }
+
+  async function loadCompletedDays() {
+    const { data } = await supabaseClient
+      .from('entries')
+      .select('day_number')
+      .eq('participant_id', currentParticipantId);
+    completedDays = new Set((data || []).map(row => row.day_number));
+  }
+
+  async function enterWithCode(code) {
+    gateBtn.disabled = true;
+    gateError.textContent = '';
+    try {
+      const participantId = await claimCode(code);
+      currentParticipantId = participantId;
+      localStorage.setItem(CODE_STORAGE_KEY, code);
+      gateOverlay.style.display = 'none';
+
+      await loadRouteState();
+      await loadCompletedDays();
+      showFlower();
+    } catch (e) {
+      if (e.message === 'not_found') {
+        gateError.textContent = 'Такой код не найден. Проверьте, пожалуйста, и попробуйте ещё раз.';
+      } else {
+        gateError.textContent = 'Не удалось войти. Попробуйте ещё раз.';
+        console.error(e);
+      }
+    }
+    gateBtn.disabled = false;
+  }
+
+  gateBtn.addEventListener('click', () => {
+    const code = gateInput.value.trim().toUpperCase();
+    if (!code) { gateError.textContent = 'Введите код.'; return; }
+    enterWithCode(code);
+  });
+  gateInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') gateBtn.click(); });
+
+  (async () => {
+    const savedCode = localStorage.getItem(CODE_STORAGE_KEY);
+    if (savedCode) {
+      gateInput.value = savedCode;
+      await enterWithCode(savedCode);
+    }
+  })();
+
+  } // конец initApp
+</script>
+</body>
+</html>
