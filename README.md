@@ -1,0 +1,295 @@
+[admin.html](https://github.com/user-attachments/files/31871513/admin.html)
+<!DOCTYPE html>
+<html lang="ru" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>13 MIRRORS · Админ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #14161f;
+    --bg-card: #1c1e29;
+    --ink: #e9e4d9;
+    --ink-soft: #a9a5b8;
+    --ink-faint: #6d6a80;
+    --gold: #c9a24b;
+    --teal: #5f9c8f;
+    --hairline: rgba(233, 228, 217, 0.12);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg-deep); color: var(--ink); font-family: 'Karla', sans-serif; }
+  body { min-height: 100vh; display: flex; justify-content: center; padding: 40px 20px; }
+  .wrap { width: 100%; max-width: 640px; }
+  h1 { font-size: 18px; font-weight: 600; color: var(--gold); margin: 0 0 24px; }
+  .card { background: var(--bg-card); border: 1px solid var(--hairline); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  label { display: block; font-size: 12.5px; color: var(--ink-soft); margin-bottom: 6px; }
+  input, select, textarea {
+    width: 100%; background: var(--bg-deep); border: 1px solid var(--hairline); border-radius: 6px;
+    color: var(--ink); font-family: 'Karla', sans-serif; font-size: 14px; padding: 10px; outline: none;
+  }
+  input:focus, select:focus { border-color: var(--gold); }
+  button {
+    font-family: 'Karla', sans-serif; font-size: 13.5px; font-weight: 600; color: var(--bg-deep);
+    background: var(--gold); border: none; border-radius: 6px; padding: 10px 16px; cursor: pointer;
+  }
+  button:hover { filter: brightness(1.08); }
+  button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--hairline); }
+  .row { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+  .status { font-size: 12.5px; color: var(--ink-faint); margin-top: 8px; min-height: 16px; }
+  .status.ok { color: var(--teal); }
+  .status.err { color: #d97b6c; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+  th { color: var(--ink-soft); font-weight: 500; }
+  .day-badge {
+    display: inline-block; background: var(--bg-deep); border: 1px solid var(--gold);
+    color: var(--gold); border-radius: 20px; padding: 2px 10px; font-size: 12px; margin-bottom: 10px;
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>13 M✳RRORS · панель ведущего</h1>
+
+  <div class="card" id="loginCard">
+    <label for="passInput">Пароль администратора</label>
+    <input type="password" id="passInput" placeholder="Введите пароль">
+    <div class="row"><button id="loginBtn">Войти</button></div>
+    <div class="status" id="loginStatus"></div>
+  </div>
+
+  <div id="adminPanel" class="hidden">
+
+    <div class="card">
+      <label>Сейчас открыт день</label>
+      <div class="day-badge" id="currentDayBadge">—</div>
+      <div class="row">
+        <select id="daySelect"></select>
+        <button id="setDayBtn">Открыть этот день</button>
+      </div>
+      <div class="status" id="dayStatus"></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content: space-between; margin-top:0;">
+        <button class="secondary" id="refreshBtn">Обновить ответы</button>
+        <div>
+          <button class="secondary" id="copyAllBtn">Скопировать всё текстом</button>
+          <button class="secondary" id="exportCsvBtn">Экспорт в CSV</button>
+        </div>
+      </div>
+      <div class="status" id="entriesStatus"></div>
+      <div style="overflow-x:auto; margin-top:14px;">
+        <table id="entriesTable">
+          <thead>
+            <tr><th>День</th><th>Участник</th><th>Карта</th><th>След дня</th><th>Когда</th></tr>
+          </thead>
+          <tbody id="entriesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  const LIBRARY_SOURCES = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js'
+  ];
+
+  // ============================================================
+  // НАСТРОЙКА: те же два значения, что и в основном файле маршрута
+  // ============================================================
+  const SUPABASE_URL = 'https://mtqqkgojrepdhbqkbqic.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable__oUSc-S0xZEDvWgcGubYxQ_F5KjbQ4j';
+  // ============================================================
+
+  let supabaseClient;
+  let adminPassword = null;
+  let lastEntries = [];
+
+  const loginCard = document.getElementById('loginCard');
+  const passInput = document.getElementById('passInput');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginStatus = document.getElementById('loginStatus');
+  const adminPanel = document.getElementById('adminPanel');
+  const currentDayBadge = document.getElementById('currentDayBadge');
+  const daySelect = document.getElementById('daySelect');
+  const setDayBtn = document.getElementById('setDayBtn');
+  const dayStatus = document.getElementById('dayStatus');
+  const refreshBtn = document.getElementById('refreshBtn');
+  const copyAllBtn = document.getElementById('copyAllBtn');
+  const exportCsvBtn = document.getElementById('exportCsvBtn');
+  const entriesStatus = document.getElementById('entriesStatus');
+  const entriesBody = document.getElementById('entriesBody');
+
+  for (let i = 1; i <= 13; i++) {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = 'День ' + i;
+    daySelect.appendChild(opt);
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  async function ensureLibrary() {
+    if (window.supabase) return true;
+    for (const src of LIBRARY_SOURCES) {
+      try { await loadScript(src); if (window.supabase) return true; } catch (e) {}
+    }
+    return false;
+  }
+
+  async function login() {
+    loginStatus.textContent = '';
+    const pass = passInput.value.trim();
+    if (!pass) { loginStatus.textContent = 'Введите пароль.'; loginStatus.className = 'status err'; return; }
+
+    const ok = await ensureLibrary();
+    if (!ok) {
+      loginStatus.textContent = 'Не удаётся связаться с сервером. Проверьте интернет и обновите страницу.';
+      loginStatus.className = 'status err';
+      return;
+    }
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    loginBtn.disabled = true;
+    loginStatus.textContent = 'проверяю…';
+    try {
+      const { data, error } = await supabaseClient.rpc('admin_check', { input_password: pass });
+      if (error || !data) {
+        loginStatus.textContent = 'Неверный пароль.';
+        loginStatus.className = 'status err';
+        loginBtn.disabled = false;
+        return;
+      }
+      adminPassword = pass;
+      loginCard.classList.add('hidden');
+      adminPanel.classList.remove('hidden');
+      await loadCurrentDay();
+      await loadEntries();
+    } catch (e) {
+      loginStatus.textContent = 'Ошибка входа. Попробуйте ещё раз.';
+      loginStatus.className = 'status err';
+    }
+    loginBtn.disabled = false;
+  }
+  loginBtn.addEventListener('click', login);
+  passInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
+
+  async function loadCurrentDay() {
+    const { data, error } = await supabaseClient.rpc('admin_get_current_day', { input_password: adminPassword });
+    if (!error && data) {
+      currentDayBadge.textContent = 'День ' + data;
+      daySelect.value = data;
+    }
+  }
+
+  setDayBtn.addEventListener('click', async () => {
+    const newDay = parseInt(daySelect.value, 10);
+    setDayBtn.disabled = true;
+    dayStatus.textContent = 'сохраняю…';
+    dayStatus.className = 'status';
+    const { error } = await supabaseClient.rpc('admin_set_current_day', {
+      input_password: adminPassword, new_day: newDay
+    });
+    if (error) {
+      dayStatus.textContent = 'Не удалось сохранить.';
+      dayStatus.className = 'status err';
+    } else {
+      dayStatus.textContent = 'День ' + newDay + ' открыт для всех участников.';
+      dayStatus.className = 'status ok';
+      currentDayBadge.textContent = 'День ' + newDay;
+    }
+    setDayBtn.disabled = false;
+  });
+
+  async function loadEntries() {
+    entriesStatus.textContent = 'загружаю…';
+    const { data, error } = await supabaseClient.rpc('admin_get_entries', { input_password: adminPassword });
+    if (error) {
+      entriesStatus.textContent = 'Не удалось загрузить ответы.';
+      entriesStatus.className = 'status err';
+      return;
+    }
+    lastEntries = data || [];
+    entriesBody.innerHTML = '';
+    lastEntries.forEach(row => {
+      const tr = document.createElement('tr');
+      const when = row.updated_at ? new Date(row.updated_at).toLocaleString('ru-RU') : '—';
+      tr.innerHTML =
+        '<td>' + row.day_number + '</td>' +
+        '<td>' + (row.participant_code || '—') + '</td>' +
+        '<td>' + (row.chosen_card || '—') + '</td>' +
+        '<td>' + (row.reflection_text ? row.reflection_text.replace(/</g,'&lt;') : '—') + '</td>' +
+        '<td>' + when + '</td>';
+      entriesBody.appendChild(tr);
+    });
+    entriesStatus.textContent = 'Загружено записей: ' + lastEntries.length;
+    entriesStatus.className = 'status ok';
+  }
+  refreshBtn.addEventListener('click', loadEntries);
+
+  copyAllBtn.addEventListener('click', async () => {
+    if (!lastEntries.length) return;
+    const text = lastEntries.map(row => {
+      const when = row.updated_at ? new Date(row.updated_at).toLocaleString('ru-RU') : '';
+      return 'День ' + row.day_number + ' · ' + (row.participant_code || '') + ' · карта ' + (row.chosen_card || '—') +
+        '\n' + (row.reflection_text || '') + '\n(' + when + ')\n';
+    }).join('\n---\n\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      entriesStatus.textContent = 'Скопировано в буфер обмена.';
+      entriesStatus.className = 'status ok';
+    } catch (e) {
+      entriesStatus.textContent = 'Не удалось скопировать автоматически. Выделите текст вручную.';
+      entriesStatus.className = 'status err';
+    }
+  });
+
+  function csvEscape(value) {
+    const s = (value === null || value === undefined) ? '' : String(value);
+    if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  exportCsvBtn.addEventListener('click', () => {
+    if (!lastEntries.length) return;
+    const header = ['День', 'Участник', 'Карта', 'След дня', 'Когда'];
+    const lines = [header.join(',')];
+    lastEntries.forEach(row => {
+      const when = row.updated_at ? new Date(row.updated_at).toLocaleString('ru-RU') : '';
+      lines.push([
+        csvEscape(row.day_number),
+        csvEscape(row.participant_code),
+        csvEscape(row.chosen_card),
+        csvEscape(row.reflection_text),
+        csvEscape(when)
+      ].join(','));
+    });
+    const csvContent = '\uFEFF' + lines.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '13mirrors-otvety.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+</script>
+</body>
+</html>
