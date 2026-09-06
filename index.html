@@ -107,15 +107,16 @@
   .petal-numeral { pointer-events: none; }
 
   .petal-glow {
-    position: absolute; inset: -12%; border-radius: 50%;
+    position: absolute; inset: -25%; border-radius: 50%;
     pointer-events: none;
-    opacity: 0.5;
-    filter: blur(2px);
+    opacity: 0.6;
+    filter: blur(10px);
+    mix-blend-mode: screen;
     animation: petalBreathe 3.4s ease-in-out infinite;
   }
   @keyframes petalBreathe {
     0%, 100% { opacity: 0.35; }
-    50% { opacity: 0.6; }
+    50% { opacity: 0.65; }
   }
 
   .petal-spark {
@@ -483,7 +484,7 @@
       if (!isLocked) {
         const glow = document.createElement('div');
         glow.className = 'petal-glow';
-        glow.style.background = 'radial-gradient(circle, ' + color + '55 0%, transparent 70%)';
+        glow.style.background = 'radial-gradient(circle, ' + color + '80 0%, ' + color + '30 40%, transparent 75%)';
         btn.appendChild(glow);
 
         const numeral = document.createElement('div');
