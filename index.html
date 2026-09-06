@@ -48,39 +48,43 @@
 
   /* ---------- gate screen ---------- */
   .gate-overlay {
-    position: fixed; inset: 0; background: var(--bg-deep);
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 45% at 30% 20%, rgba(233,228,217,0.05), transparent 65%),
+      radial-gradient(ellipse 55% 40% at 75% 80%, rgba(233,228,217,0.04), transparent 65%),
+      radial-gradient(ellipse 90% 70% at 50% 50%, #14161f, var(--bg-deep) 78%);
     display: flex; align-items: center; justify-content: center;
     z-index: 100; padding: 44px 28px;
     overflow: hidden;
   }
   .gate-glow-tr {
     position: absolute; top: -80px; right: -90px; width: 320px; height: 320px;
-    border-radius: 50%; background: radial-gradient(circle, rgba(233,228,217,0.28), rgba(233,228,217,0.1) 45%, transparent 72%);
+    border-radius: 50%; background: radial-gradient(circle, rgba(233,228,217,0.22), rgba(233,228,217,0.08) 45%, transparent 72%);
     pointer-events: none;
   }
   .gate-glow-bl {
     position: absolute; bottom: -70px; left: -80px; width: 300px; height: 300px;
-    border-radius: 50%; background: radial-gradient(circle, rgba(201,162,75,0.22), rgba(201,162,75,0.08) 45%, transparent 72%);
+    border-radius: 50%; background: radial-gradient(circle, rgba(224,220,214,0.18), rgba(224,220,214,0.06) 45%, transparent 72%);
     pointer-events: none;
   }
   .gate-box { position: relative; width: 100%; max-width: 340px; text-align: center; }
-  .gate-mark { font-family: 'Karla', sans-serif; font-size: 13px; letter-spacing: 0.18em; color: var(--gold); font-weight: 600; }
+  .gate-mark { font-family: 'Karla', sans-serif; font-size: 13px; letter-spacing: 0.18em; color: #d8cdb0; font-weight: 600; }
   .gate-tagline { font-family: 'Karla', sans-serif; font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
 
   .gate-divider { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-  .gate-divider-line { width: 1px; height: 11px; background: rgba(243,234,208,0.35); }
-  .gate-divider-star { color: #f3ead0; font-size: 11px; line-height: 1; }
+  .gate-divider-line { width: 1px; height: 11px; background: rgba(233,228,217,0.3); }
+  .gate-divider-star { color: #ece6d8; font-size: 11px; line-height: 1; }
 
   .gate-title { font-family: 'Lora', Georgia, serif; font-size: 26px; font-weight: 500; color: var(--ink); margin: 20px 0 0; line-height: 1.3; }
   .gate-route { font-family: 'Karla', sans-serif; font-size: 12.5px; color: var(--ink-soft); margin-top: 14px; line-height: 1.5; }
 
   .gate-form-title { font-family: 'Karla', sans-serif; font-size: 15px; color: var(--ink); margin: 0 0 8px; }
   .gate-sub { font-family: 'Karla', sans-serif; font-size: 12px; color: var(--ink-faint); margin: 0 0 22px; line-height: 1.5; }
-  .gate-input { width: 100%; background: var(--bg-card); border: 1px solid var(--hairline); border-radius: 8px; color: var(--ink); font-family: 'Karla', sans-serif; font-size: 14px; letter-spacing: 0.05em; text-align: center; padding: 13px; outline: none; text-transform: uppercase; margin-bottom: 14px; }
-  .gate-input:focus { border-color: var(--gold-soft); }
+  .gate-input { width: 100%; background: var(--bg-card); border: 1px solid rgba(210,205,195,0.3); border-radius: 8px; color: var(--ink); font-family: 'Karla', sans-serif; font-size: 14px; letter-spacing: 0.05em; text-align: center; padding: 13px; outline: none; text-transform: uppercase; margin-bottom: 14px; }
+  .gate-input:focus { border-color: rgba(230,224,212,0.55); }
   .gate-input::placeholder { text-transform: none; color: var(--ink-faint); }
-  .gate-btn { width: 100%; font-family: 'Karla', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.03em; color: var(--bg-deep); background: var(--gold); border: none; border-radius: 7px; padding: 12px 20px; cursor: pointer; transition: filter 0.2s; }
-  .gate-btn:hover { filter: brightness(1.08); }
+  .gate-btn { width: 100%; font-family: 'Karla', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.03em; color: #1c1e29; background: linear-gradient(160deg, #ece4d4, #d8cdb8); border: none; border-radius: 7px; padding: 12px 20px; cursor: pointer; transition: filter 0.2s; }
+  .gate-btn:hover { filter: brightness(1.05); }
   .gate-btn:disabled { opacity: 0.5; cursor: default; }
   .gate-error { font-family: 'Karla', sans-serif; font-size: 12.5px; color: #d97b6c; margin-top: 12px; min-height: 16px; }
   .hidden { display: none !important; }
@@ -121,9 +125,10 @@
   .flower-screen.collapsing { opacity: 0; transform: scale(0.9); }
 
   .flower-wrap {
-    position: relative;
-    width: min(100vw, calc(100vh * 1086 / 1448));
-    aspect-ratio: 1086 / 1448;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
   }
   .flower-wrap img {
     position: absolute; inset: 0;
@@ -450,6 +455,7 @@
   const gateError = document.getElementById('gateError');
 
   const flowerScreen = document.getElementById('flowerScreen');
+  const flowerWrap = document.querySelector('.flower-wrap');
   const petalsLayer = document.getElementById('petalsLayer');
   const pageContent = document.getElementById('pageContent');
   const day1Card = document.getElementById('day1Card');
@@ -551,8 +557,25 @@
     el.style.transform = 'translate(-50%,-50%)';
   }
 
+  // реальные размеры исходной картинки цветка
+  const IMG_NATURAL_W = 1086;
+  const IMG_NATURAL_H = 1448;
+
+  // при object-fit:cover считаем, какая часть картинки реально видна на экране
+  function computeCoverLayout() {
+    const cw = flowerWrap.clientWidth;
+    const ch = flowerWrap.clientHeight;
+    const scale = Math.max(cw / IMG_NATURAL_W, ch / IMG_NATURAL_H);
+    const displayedW = IMG_NATURAL_W * scale;
+    const displayedH = IMG_NATURAL_H * scale;
+    const offsetX = (cw - displayedW) / 2;
+    const offsetY = (ch - displayedH) / 2;
+    return { displayedW, displayedH, offsetX, offsetY };
+  }
+
   function renderFlower() {
     petalsLayer.innerHTML = '';
+    const layout = computeCoverLayout();
     for (let day = 1; day <= 13; day++) {
       const pos = PETAL_POSITIONS[day];
       const isLocked = day > currentOpenDay;
@@ -560,10 +583,16 @@
       const isToday = day === currentOpenDay;
       const color = DAY_COLORS[day];
 
+      const pxX = layout.offsetX + (pos.x / 100) * layout.displayedW;
+      const pxY = layout.offsetY + (pos.y / 100) * layout.displayedH;
+      const sizePx = (day === 13 ? 0.13 : 0.11) * layout.displayedW;
+
       const btn = document.createElement('button');
       btn.className = 'petal-btn' + (day === 13 ? ' center' : '') + (isLocked ? ' locked' : '');
-      btn.style.left = pos.x + '%';
-      btn.style.top = pos.y + '%';
+      btn.style.left = pxX + 'px';
+      btn.style.top = pxY + 'px';
+      btn.style.width = sizePx + 'px';
+      btn.style.height = sizePx + 'px';
       btn.setAttribute('aria-label', 'День ' + day);
 
       if (!isLocked) {
@@ -607,6 +636,14 @@
     flowerScreen.classList.remove('hidden', 'collapsing');
     renderFlower();
   }
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (!flowerScreen.classList.contains('hidden')) renderFlower();
+    }, 150);
+  });
 
   function collapseFlowerAndShow(callback) {
     flowerScreen.classList.add('collapsing');
