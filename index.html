@@ -42,9 +42,9 @@
     padding: 0;
     overflow-x: hidden;
     background:
-      radial-gradient(ellipse 70% 50% at 15% 10%, rgba(180,185,195,0.06), transparent 60%),
-      radial-gradient(ellipse 60% 45% at 85% 90%, rgba(190,180,165,0.05), transparent 60%),
-      radial-gradient(ellipse 95% 80% at 50% 50%, #171922, #0d0f16 78%);
+      radial-gradient(ellipse 70% 50% at 15% 10%, rgba(120,130,145,0.05), transparent 60%),
+      radial-gradient(ellipse 60% 45% at 85% 90%, rgba(130,120,110,0.04), transparent 60%),
+      radial-gradient(ellipse 95% 80% at 50% 50%, #1c2431, #151e29 78%);
   }
 
   /* ---------- gate screen ---------- */
@@ -121,7 +121,6 @@
     width: 100vw; min-height: 100vh;
     display: flex; align-items: center; justify-content: center;
     transition: opacity 0.5s ease, transform 0.5s ease;
-    background: var(--bg-deep);
   }
   .flower-screen.collapsing { opacity: 0; transform: scale(0.9); }
 
@@ -135,12 +134,12 @@
     width: 100%; height: 100%;
     object-fit: cover;
     display: block;
-    mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, black 78%, transparent 100%);
-    -webkit-mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, black 78%, transparent 100%);
+    mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, black 55%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, black 55%, transparent 100%);
   }
   .flower-corner-tone {
-    mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, black 78%, transparent 100%);
-    -webkit-mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, black 78%, transparent 100%);
+    mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, black 55%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 92% 92% at 50% 50%, black 55%, transparent 100%);
   }
   .flower-corner-tone {
     position: absolute; inset: 0;
@@ -733,26 +732,16 @@
       const { error: authError } = await supabaseClient.auth.signInAnonymously();
       if (authError) throw authError;
     }
-    const { data: userData } = await supabaseClient.auth.getUser();
-    const uid = userData.user.id;
 
-    const { data: participant, error: findError } = await supabaseClient
-      .from('participants')
-      .select('id, user_id')
-      .eq('code', code)
-      .maybeSingle();
+    const { data: participantId, error } = await supabaseClient.rpc('claim_participant_code', {
+      p_code: code
+    });
 
-    if (findError) throw findError;
-    if (!participant) throw new Error('not_found');
-
-    if (!participant.user_id || participant.user_id !== uid) {
-      const { error: claimError } = await supabaseClient
-        .from('participants')
-        .update({ user_id: uid })
-        .eq('id', participant.id);
-      if (claimError) throw claimError;
+    if (error) {
+      if (error.message && error.message.includes('not_found')) throw new Error('not_found');
+      throw error;
     }
-    return participant.id;
+    return participantId;
   }
 
   async function loadRouteState() {
