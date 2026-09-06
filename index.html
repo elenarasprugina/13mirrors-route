@@ -38,7 +38,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 40px 0;
+    padding: 0;
+    overflow-x: hidden;
   }
 
   /* ---------- gate screen ---------- */
@@ -103,48 +104,46 @@
   .petal-btn.center { width: 13%; }
   .petal-btn.locked { cursor: default; }
 
-  .petal-number {
-    font-family: 'Karla', sans-serif;
-    font-weight: 600;
-    color: rgba(233, 228, 217, 0.85);
-    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-    font-size: clamp(11px, 3.2vw, 15px);
-    pointer-events: none;
-  }
-  .petal-btn.locked .petal-number { color: rgba(233, 228, 217, 0.25); }
-
-  .petal-dim {
-    position: absolute; inset: 0; border-radius: 50%;
-    background: rgba(13, 15, 22, 0.55);
-    pointer-events: none;
-  }
+  .petal-numeral { pointer-events: none; }
 
   .petal-glow {
-    position: absolute; inset: -18%; border-radius: 50%;
-    box-shadow: 0 0 0 2px var(--gold), 0 0 22px 6px rgba(201,162,75,0.55);
+    position: absolute; inset: -12%; border-radius: 50%;
     pointer-events: none;
-    animation: petalPulse 2.4s ease-in-out infinite;
+    opacity: 0.5;
+    filter: blur(2px);
+    animation: petalBreathe 3.4s ease-in-out infinite;
   }
-  @keyframes petalPulse {
-    0%, 100% { opacity: 0.55; }
-    50% { opacity: 1; }
+  @keyframes petalBreathe {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 0.6; }
+  }
+
+  .petal-spark {
+    position: absolute;
+    top: -14%;
+    right: -14%;
+    width: 34%;
+    aspect-ratio: 1;
+    pointer-events: none;
+    animation: sparkBreathe 2s ease-in-out infinite;
+  }
+  @keyframes sparkBreathe {
+    0%, 100% { opacity: 0.6; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.05); }
   }
 
   .petal-check {
     position: absolute;
-    bottom: 2%;
-    right: 2%;
-    width: 22%;
+    top: -14%;
+    right: -14%;
+    width: 30%;
     aspect-ratio: 1;
-    background: var(--teal);
-    border-radius: 50%;
+    pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: none;
-    box-shadow: 0 0 0 2px var(--bg-deep);
   }
-  .petal-check svg { width: 55%; height: 55%; }
+  .petal-check svg { width: 100%; height: 100%; }
 
   .flower-legend {
     display: flex; gap: 16px; margin-top: 20px;
@@ -228,9 +227,9 @@
     <div id="petalsLayer"></div>
   </div>
   <div class="flower-legend">
-    <span>● пройден</span>
-    <span>● сегодня</span>
-    <span>○ закрыт</span>
+    <span>знак · день открыт</span>
+    <span>вспышка · сегодня</span>
+    <span>✓ · выполнено</span>
   </div>
 </div>
 
@@ -403,6 +402,69 @@
   let completedDays = new Set();
   let openedDayNumber = null;
 
+  // цвет каждого дня — деликатные, приглушённые оттенки
+  const DAY_COLORS = {
+    1:  '#c97b6f',
+    2:  '#cf8a63',
+    3:  '#d1a35f',
+    4:  '#cdbb66',
+    5:  '#b9c26a',
+    6:  '#8fbf7a',
+    7:  '#7cc0a3',
+    8:  '#6bb5c2',
+    9:  '#6fa3d1',
+    10: '#6f8fd1',
+    11: '#8a7fd1',
+    12: '#a97fd1',
+    13: '#f0ece0'
+  };
+
+  // строит SVG-разметку майянского знака (точки над чертами) заданного цвета
+  function buildMayaNumeralSVG(day, color) {
+    const bars = Math.floor(day / 5);
+    const dots = day % 5;
+    const dotR = 3.4, dotGap = 9, barH = 4.4, barGap = 3;
+    const dotsWidth = dots > 0 ? (dots - 1) * dotGap + dotR * 2 : 0;
+    const barsWidth = bars > 0 ? Math.max(dotsWidth, dotGap * 1.6) : dotsWidth;
+    const totalWidth = Math.max(dotsWidth, barsWidth, dotR * 2);
+    const dotsRowHeight = dots > 0 ? dotR * 2 : 0;
+    const barsBlockHeight = bars > 0 ? bars * barH + (bars - 1) * barGap : 0;
+    const gapBetween = (dots > 0 && bars > 0) ? 3 : 0;
+    const totalHeight = dotsRowHeight + gapBetween + barsBlockHeight;
+
+    let svg = '<svg viewBox="0 0 ' + totalWidth + ' ' + totalHeight + '" style="width:100%; height:100%; overflow:visible;">';
+
+    if (dots > 0) {
+      const dotsStartX = (totalWidth - dotsWidth) / 2 + dotR;
+      for (let i = 0; i < dots; i++) {
+        const cx = dotsStartX + i * dotGap;
+        svg += '<circle cx="' + cx + '" cy="' + dotR + '" r="' + dotR + '" fill="' + color + '" opacity="0.92"/>';
+      }
+    }
+    if (bars > 0) {
+      const barsStartY = dotsRowHeight + gapBetween;
+      const barW = Math.max(dotsWidth, dotGap * 1.6);
+      const barX = (totalWidth - barW) / 2;
+      for (let i = 0; i < bars; i++) {
+        const by = barsStartY + i * (barH + barGap);
+        svg += '<rect x="' + barX + '" y="' + by + '" width="' + barW + '" height="' + barH + '" rx="' + (barH/2) + '" fill="' + color + '" opacity="0.92"/>';
+      }
+    }
+    svg += '</svg>';
+    return svg;
+  }
+
+  // четырёхлучевая вспышка — активный день
+  const SPARK_SVG =
+    '<svg viewBox="0 0 40 40" style="width:100%; height:100%;">' +
+    '<path d="M20 2 L23 17 L38 20 L23 23 L20 38 L17 23 L2 20 L17 17 Z" fill="#f3ead0" opacity="0.9"/>' +
+    '</svg>';
+
+  const CHECK_SVG =
+    '<svg viewBox="0 0 24 24" fill="none">' +
+    '<path d="M5 12.5l4.5 4.5L19 7" stroke="#f3ead0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '</svg>';
+
   function renderFlower() {
     petalsLayer.innerHTML = '';
     for (let day = 1; day <= 13; day++) {
@@ -410,6 +472,7 @@
       const isLocked = day > currentOpenDay;
       const isDone = completedDays.has(day);
       const isToday = day === currentOpenDay;
+      const color = DAY_COLORS[day];
 
       const btn = document.createElement('button');
       btn.className = 'petal-btn' + (day === 13 ? ' center' : '') + (isLocked ? ' locked' : '');
@@ -417,26 +480,30 @@
       btn.style.top = pos.y + '%';
       btn.setAttribute('aria-label', 'День ' + day);
 
-      if (isToday) {
+      if (!isLocked) {
         const glow = document.createElement('div');
         glow.className = 'petal-glow';
+        glow.style.background = 'radial-gradient(circle, ' + color + '55 0%, transparent 70%)';
         btn.appendChild(glow);
-      }
-      if (isLocked) {
-        const dim = document.createElement('div');
-        dim.className = 'petal-dim';
-        btn.appendChild(dim);
+
+        const numeral = document.createElement('div');
+        numeral.className = 'petal-numeral';
+        numeral.style.cssText = 'position:absolute; width:46%; height:46%; left:50%; top:50%; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center;';
+        numeral.innerHTML = buildMayaNumeralSVG(day, color);
+        btn.appendChild(numeral);
       }
 
-      const num = document.createElement('span');
-      num.className = 'petal-number';
-      num.textContent = day;
-      btn.appendChild(num);
+      if (isToday && !isDone) {
+        const spark = document.createElement('div');
+        spark.className = 'petal-spark';
+        spark.innerHTML = SPARK_SVG;
+        btn.appendChild(spark);
+      }
 
       if (isDone) {
         const check = document.createElement('div');
         check.className = 'petal-check';
-        check.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        check.innerHTML = CHECK_SVG;
         btn.appendChild(check);
       }
 
