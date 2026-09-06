@@ -40,6 +40,10 @@
     align-items: center;
     padding: 0;
     overflow-x: hidden;
+    background:
+      radial-gradient(ellipse 70% 50% at 15% 10%, rgba(233,228,217,0.05), transparent 60%),
+      radial-gradient(ellipse 60% 45% at 85% 90%, rgba(201,162,75,0.04), transparent 60%),
+      radial-gradient(ellipse 90% 70% at 50% 50%, #14161f, var(--bg-deep) 75%);
   }
 
   /* ---------- gate screen ---------- */
@@ -50,13 +54,13 @@
     overflow: hidden;
   }
   .gate-glow-tr {
-    position: absolute; top: -60px; right: -70px; width: 240px; height: 240px;
-    border-radius: 50%; background: radial-gradient(circle, rgba(233,228,217,0.09), transparent 70%);
+    position: absolute; top: -80px; right: -90px; width: 320px; height: 320px;
+    border-radius: 50%; background: radial-gradient(circle, rgba(233,228,217,0.28), rgba(233,228,217,0.1) 45%, transparent 72%);
     pointer-events: none;
   }
   .gate-glow-bl {
-    position: absolute; bottom: -50px; left: -60px; width: 220px; height: 220px;
-    border-radius: 50%; background: radial-gradient(circle, rgba(233,228,217,0.07), transparent 70%);
+    position: absolute; bottom: -70px; left: -80px; width: 300px; height: 300px;
+    border-radius: 50%; background: radial-gradient(circle, rgba(201,162,75,0.22), rgba(201,162,75,0.08) 45%, transparent 72%);
     pointer-events: none;
   }
   .gate-box { position: relative; width: 100%; max-width: 340px; text-align: center; }
@@ -81,6 +85,32 @@
   .gate-error { font-family: 'Karla', sans-serif; font-size: 12.5px; color: #d97b6c; margin-top: 12px; min-height: 16px; }
   .hidden { display: none !important; }
 
+  .gate-bubble-wrap {
+    position: absolute;
+    bottom: -160px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 340px;
+    height: 340px;
+    border-radius: 50%;
+    overflow: hidden;
+    opacity: 0.8;
+    box-shadow: 0 0 60px 10px rgba(233,228,217,0.08);
+  }
+  .gate-bubble-wrap img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .gate-bubble-star {
+    position: absolute;
+    bottom: 168px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #f3ead0;
+    font-size: 15px;
+    text-shadow: 0 0 12px rgba(243,234,208,0.6);
+    animation: sparkBreathe 2.4s ease-in-out infinite;
+  }
+
   /* ---------- flower screen ---------- */
   .flower-screen {
     width: 100vw; min-height: 100vh;
@@ -100,6 +130,13 @@
     width: 100%; height: 100%;
     object-fit: cover;
     display: block;
+  }
+  .flower-corner-tone {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 45% 35% at 88% 6%, rgba(13,15,22,0.22), transparent 65%),
+      radial-gradient(ellipse 45% 35% at 8% 94%, rgba(13,15,22,0.18), transparent 65%);
   }
 
   .petal-btn {
@@ -132,16 +169,33 @@
     50% { opacity: 0.6; }
   }
 
+  .petal-glow.today {
+    animation: petalBreatheToday 3.4s ease-in-out infinite;
+  }
+  @keyframes petalBreatheToday {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.76; }
+  }
+
+  .petal-center-ambient {
+    position: absolute; inset: -6%; border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(255,250,235,0.45) 0%, rgba(255,250,235,0.15) 55%, transparent 78%);
+    opacity: 0.35;
+    filter: blur(5px);
+    mix-blend-mode: screen;
+  }
+
   .petal-spark {
     position: absolute;
-    width: 34%;
+    width: 40%;
     aspect-ratio: 1;
     pointer-events: none;
-    animation: sparkBreathe 2s ease-in-out infinite;
+    animation: sparkBreathe 4.6s ease-in-out infinite;
   }
   @keyframes sparkBreathe {
-    0%, 100% { opacity: 0.6; transform: translate(-50%,-50%) scale(0.9); }
-    50% { opacity: 1; transform: translate(-50%,-50%) scale(1.05); }
+    0%, 100% { opacity: 0.75; transform: translate(-50%,-50%) scale(0.96); }
+    50% { opacity: 1; transform: translate(-50%,-50%) scale(1.04); }
   }
 
   .petal-mark {
@@ -244,6 +298,7 @@
 <div class="flower-screen hidden" id="flowerScreen">
   <div class="flower-wrap">
     <img src="flower-bg.png" alt="Маршрут 13 дней">
+    <div class="flower-corner-tone"></div>
     <div id="petalsLayer"></div>
   </div>
 </div>
@@ -513,9 +568,15 @@
 
       if (!isLocked) {
         const glow = document.createElement('div');
-        glow.className = 'petal-glow';
+        glow.className = 'petal-glow' + (isToday ? ' today' : '');
         glow.style.background = 'radial-gradient(circle, ' + color + 'aa 0%, ' + color + '55 55%, transparent 75%)';
         btn.appendChild(glow);
+      }
+
+      if (day === 13) {
+        const ambient = document.createElement('div');
+        ambient.className = 'petal-center-ambient';
+        btn.appendChild(ambient);
       }
 
       if (isToday && !isDone) {
