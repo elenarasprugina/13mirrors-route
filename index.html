@@ -167,10 +167,10 @@
   .petal-btn.locked { cursor: default; }
 
   .petal-glow {
-    position: absolute; inset: -8%; border-radius: 50%;
+    position: absolute; inset: -2%; border-radius: 50%;
     pointer-events: none;
     opacity: 0.5;
-    filter: blur(6px);
+    filter: blur(4px);
     animation: petalBreathe 3.4s ease-in-out infinite;
   }
   @keyframes petalBreathe {
@@ -209,18 +209,16 @@
 
   .petal-mark {
     position: absolute;
-    width: 38%;
+    width: 26%;
     aspect-ratio: 1;
     pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    filter: drop-shadow(0 0 4px rgba(0,0,0,0.7));
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.6));
   }
   .petal-mark-halo {
-    position: absolute; inset: -20%; border-radius: 50%;
-    pointer-events: none;
-    background: radial-gradient(circle, rgba(20,22,30,0.55) 0%, transparent 72%);
+    display: none;
   }
 
   /* ---------- day card screen ---------- */
@@ -490,7 +488,7 @@
   let openedDayNumber = null;
 
   // цвет каждого дня — деликатные, приглушённые оттенки
-  const DREAMSPELL_CYCLE = ['#f0ece0', '#4f7fe0', '#e8d24a', '#e0503f']; // белый, синий, жёлтый, красный
+  const DREAMSPELL_CYCLE = ['#f0ece0', '#4f7fe0', '#f5cc1a', '#e0503f']; // белый, синий, жёлтый, красный
   const DAY_COLORS = {};
   for (let d = 1; d <= 12; d++) {
     DAY_COLORS[d] = DREAMSPELL_CYCLE[(d - 1) % 4];
@@ -576,7 +574,7 @@
       if (!isLocked) {
         const glow = document.createElement('div');
         glow.className = 'petal-glow' + (isToday ? ' today' : '');
-        glow.style.background = 'radial-gradient(circle, ' + color + 'aa 0%, ' + color + '55 55%, transparent 75%)';
+        glow.style.background = 'radial-gradient(circle, ' + color + 'cc 0%, ' + color + '70 50%, transparent 70%)';
         btn.appendChild(glow);
       }
 
