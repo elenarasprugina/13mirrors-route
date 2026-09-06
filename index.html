@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google" content="notranslate">
 <title>13 MIRRORS · Маршрут</title>
+<!-- version: v12 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -41,9 +42,9 @@
     padding: 0;
     overflow-x: hidden;
     background:
-      radial-gradient(ellipse 70% 50% at 15% 10%, rgba(233,228,217,0.05), transparent 60%),
-      radial-gradient(ellipse 60% 45% at 85% 90%, rgba(201,162,75,0.04), transparent 60%),
-      radial-gradient(ellipse 90% 70% at 50% 50%, #14161f, var(--bg-deep) 75%);
+      radial-gradient(ellipse 70% 50% at 15% 10%, rgba(180,185,195,0.06), transparent 60%),
+      radial-gradient(ellipse 60% 45% at 85% 90%, rgba(190,180,165,0.05), transparent 60%),
+      radial-gradient(ellipse 95% 80% at 50% 50%, #171922, #0d0f16 78%);
   }
 
   /* ---------- gate screen ---------- */
@@ -125,16 +126,21 @@
   .flower-screen.collapsing { opacity: 0; transform: scale(0.9); }
 
   .flower-wrap {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
+    position: relative;
+    width: min(100vw, calc(100vh * 1086 / 1448));
+    aspect-ratio: 1086 / 1448;
   }
   .flower-wrap img {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
     object-fit: cover;
     display: block;
+    mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, black 78%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, black 78%, transparent 100%);
+  }
+  .flower-corner-tone {
+    mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, black 78%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, black 78%, transparent 100%);
   }
   .flower-corner-tone {
     position: absolute; inset: 0;
@@ -557,25 +563,8 @@
     el.style.transform = 'translate(-50%,-50%)';
   }
 
-  // реальные размеры исходной картинки цветка
-  const IMG_NATURAL_W = 1086;
-  const IMG_NATURAL_H = 1448;
-
-  // при object-fit:cover считаем, какая часть картинки реально видна на экране
-  function computeCoverLayout() {
-    const cw = flowerWrap.clientWidth;
-    const ch = flowerWrap.clientHeight;
-    const scale = Math.max(cw / IMG_NATURAL_W, ch / IMG_NATURAL_H);
-    const displayedW = IMG_NATURAL_W * scale;
-    const displayedH = IMG_NATURAL_H * scale;
-    const offsetX = (cw - displayedW) / 2;
-    const offsetY = (ch - displayedH) / 2;
-    return { displayedW, displayedH, offsetX, offsetY };
-  }
-
   function renderFlower() {
     petalsLayer.innerHTML = '';
-    const layout = computeCoverLayout();
     for (let day = 1; day <= 13; day++) {
       const pos = PETAL_POSITIONS[day];
       const isLocked = day > currentOpenDay;
@@ -583,16 +572,10 @@
       const isToday = day === currentOpenDay;
       const color = DAY_COLORS[day];
 
-      const pxX = layout.offsetX + (pos.x / 100) * layout.displayedW;
-      const pxY = layout.offsetY + (pos.y / 100) * layout.displayedH;
-      const sizePx = (day === 13 ? 0.13 : 0.11) * layout.displayedW;
-
       const btn = document.createElement('button');
       btn.className = 'petal-btn' + (day === 13 ? ' center' : '') + (isLocked ? ' locked' : '');
-      btn.style.left = pxX + 'px';
-      btn.style.top = pxY + 'px';
-      btn.style.width = sizePx + 'px';
-      btn.style.height = sizePx + 'px';
+      btn.style.left = pos.x + '%';
+      btn.style.top = pos.y + '%';
       btn.setAttribute('aria-label', 'День ' + day);
 
       if (!isLocked) {
@@ -636,14 +619,6 @@
     flowerScreen.classList.remove('hidden', 'collapsing');
     renderFlower();
   }
-
-  let resizeTimer = null;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      if (!flowerScreen.classList.contains('hidden')) renderFlower();
-    }, 150);
-  });
 
   function collapseFlowerAndShow(callback) {
     flowerScreen.classList.add('collapsing');
@@ -712,6 +687,10 @@
     saveStatus.textContent = 'сохраняю…';
     saveStatus.classList.remove('ok');
     try {
+      console.log('DEBUG save_entry: code=', currentCode, 'day=', openedDayNumber);
+      const { data: authCheck } = await supabaseClient.auth.getUser();
+      console.log('DEBUG current auth uid:', authCheck && authCheck.user ? authCheck.user.id : null);
+
       const { error } = await supabaseClient.rpc('save_entry', {
         p_code: currentCode,
         p_day: openedDayNumber,
