@@ -169,14 +169,13 @@
   .petal-glow {
     position: absolute; inset: -8%; border-radius: 50%;
     pointer-events: none;
-    opacity: 0.55;
+    opacity: 0.5;
     filter: blur(6px);
-    mix-blend-mode: screen;
     animation: petalBreathe 3.4s ease-in-out infinite;
   }
   @keyframes petalBreathe {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.6; }
+    0%, 100% { opacity: 0.38; }
+    50% { opacity: 0.56; }
   }
 
   .petal-glow.today {
@@ -210,12 +209,18 @@
 
   .petal-mark {
     position: absolute;
-    width: 30%;
+    width: 38%;
     aspect-ratio: 1;
     pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    filter: drop-shadow(0 0 4px rgba(0,0,0,0.7));
+  }
+  .petal-mark-halo {
+    position: absolute; inset: -20%; border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(20,22,30,0.55) 0%, transparent 72%);
   }
 
   /* ---------- day card screen ---------- */
@@ -486,19 +491,19 @@
 
   // цвет каждого дня — деликатные, приглушённые оттенки
   const DAY_COLORS = {
-    1:  '#c97b6f',
-    2:  '#cf8a63',
-    3:  '#d1a35f',
-    4:  '#cdbb66',
-    5:  '#b9c26a',
-    6:  '#8fbf7a',
-    7:  '#7cc0a3',
-    8:  '#6bb5c2',
-    9:  '#6fa3d1',
-    10: '#6f8fd1',
-    11: '#8a7fd1',
-    12: '#a97fd1',
-    13: '#f0ece0'
+    1:  '#e0574a',
+    2:  '#e3873c',
+    3:  '#e0b53c',
+    4:  '#d6cf3f',
+    5:  '#a8d63f',
+    6:  '#4fd66a',
+    7:  '#3fd6a8',
+    8:  '#3fb8d6',
+    9:  '#3f8fd6',
+    10: '#4f6fe0',
+    11: '#7a5ce0',
+    12: '#b05ce0',
+    13: '#f5efe0'
   };
 
   // четырёхлучевая вспышка — активный день
@@ -527,7 +532,7 @@
       const dotsStartX = pad + (contentWidth - dotsWidth) / 2 + dotR;
       for (let i = 0; i < dots; i++) {
         const cx = dotsStartX + i * dotGap;
-        svg += '<circle cx="' + cx + '" cy="' + (pad + dotR) + '" r="' + dotR + '" fill="' + color + '" opacity="0.75"/>';
+        svg += '<circle cx="' + cx + '" cy="' + (pad + dotR) + '" r="' + dotR + '" fill="' + color + '" opacity="0.95"/>';
       }
     }
     if (bars > 0) {
@@ -536,7 +541,7 @@
       const barX = pad + (contentWidth - barW) / 2;
       for (let i = 0; i < bars; i++) {
         const by = barsStartY + i * (barH + barGap);
-        svg += '<rect x="' + barX + '" y="' + by + '" width="' + barW + '" height="' + barH + '" rx="' + (barH/2) + '" fill="' + color + '" opacity="0.75"/>';
+        svg += '<rect x="' + barX + '" y="' + by + '" width="' + barW + '" height="' + barH + '" rx="' + (barH/2) + '" fill="' + color + '" opacity="0.95"/>';
       }
     }
     svg += '</svg>';
@@ -601,7 +606,13 @@
       if (isDone) {
         const mark = document.createElement('div');
         mark.className = 'petal-mark';
-        mark.innerHTML = buildMayaNumeralSVG(day, color);
+        const halo = document.createElement('div');
+        halo.className = 'petal-mark-halo';
+        mark.appendChild(halo);
+        const glyph = document.createElement('div');
+        glyph.style.cssText = 'position:relative; width:100%; height:100%;';
+        glyph.innerHTML = buildMayaNumeralSVG(day, color);
+        mark.appendChild(glyph);
         positionOutward(mark, day, 62);
         btn.appendChild(mark);
       }
