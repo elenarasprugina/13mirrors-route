@@ -46,16 +46,36 @@
   .gate-overlay {
     position: fixed; inset: 0; background: var(--bg-deep);
     display: flex; align-items: center; justify-content: center;
-    z-index: 100; padding: 26px;
+    z-index: 100; padding: 44px 28px;
+    overflow: hidden;
   }
-  .gate-box { width: 100%; max-width: 340px; text-align: center; }
-  .gate-mark { font-family: 'Karla', sans-serif; font-size: 13px; letter-spacing: 0.14em; color: var(--gold); font-weight: 600; margin-bottom: 18px; }
-  .gate-title { font-family: 'Karla', sans-serif; font-size: 18px; font-weight: 500; color: var(--ink); margin: 0 0 10px; }
-  .gate-sub { font-family: 'Karla', sans-serif; font-size: 13.5px; color: var(--ink-soft); margin: 0 0 28px; line-height: 1.5; }
-  .gate-input { width: 100%; background: var(--bg-card); border: 1px solid var(--hairline); border-radius: 8px; color: var(--ink); font-family: 'Karla', sans-serif; font-size: 16px; letter-spacing: 0.05em; text-align: center; padding: 14px; outline: none; text-transform: uppercase; margin-bottom: 14px; }
+  .gate-glow-tr {
+    position: absolute; top: -60px; right: -70px; width: 240px; height: 240px;
+    border-radius: 50%; background: radial-gradient(circle, rgba(233,228,217,0.09), transparent 70%);
+    pointer-events: none;
+  }
+  .gate-glow-bl {
+    position: absolute; bottom: -50px; left: -60px; width: 220px; height: 220px;
+    border-radius: 50%; background: radial-gradient(circle, rgba(233,228,217,0.07), transparent 70%);
+    pointer-events: none;
+  }
+  .gate-box { position: relative; width: 100%; max-width: 340px; text-align: center; }
+  .gate-mark { font-family: 'Karla', sans-serif; font-size: 13px; letter-spacing: 0.18em; color: var(--gold); font-weight: 600; }
+  .gate-tagline { font-family: 'Karla', sans-serif; font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
+
+  .gate-divider { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .gate-divider-line { width: 1px; height: 11px; background: rgba(243,234,208,0.35); }
+  .gate-divider-star { color: #f3ead0; font-size: 11px; line-height: 1; }
+
+  .gate-title { font-family: 'Lora', Georgia, serif; font-size: 26px; font-weight: 500; color: var(--ink); margin: 20px 0 0; line-height: 1.3; }
+  .gate-route { font-family: 'Karla', sans-serif; font-size: 12.5px; color: var(--ink-soft); margin-top: 14px; line-height: 1.5; }
+
+  .gate-form-title { font-family: 'Karla', sans-serif; font-size: 15px; color: var(--ink); margin: 0 0 8px; }
+  .gate-sub { font-family: 'Karla', sans-serif; font-size: 12px; color: var(--ink-faint); margin: 0 0 22px; line-height: 1.5; }
+  .gate-input { width: 100%; background: var(--bg-card); border: 1px solid var(--hairline); border-radius: 8px; color: var(--ink); font-family: 'Karla', sans-serif; font-size: 14px; letter-spacing: 0.05em; text-align: center; padding: 13px; outline: none; text-transform: uppercase; margin-bottom: 14px; }
   .gate-input:focus { border-color: var(--gold-soft); }
   .gate-input::placeholder { text-transform: none; color: var(--ink-faint); }
-  .gate-btn { width: 100%; font-family: 'Karla', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.03em; color: var(--bg-deep); background: var(--gold); border: none; border-radius: 7px; padding: 13px 20px; cursor: pointer; transition: filter 0.2s; }
+  .gate-btn { width: 100%; font-family: 'Karla', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.03em; color: var(--bg-deep); background: var(--gold); border: none; border-radius: 7px; padding: 12px 20px; cursor: pointer; transition: filter 0.2s; }
   .gate-btn:hover { filter: brightness(1.08); }
   .gate-btn:disabled { opacity: 0.5; cursor: default; }
   .gate-error { font-family: 'Karla', sans-serif; font-size: 12.5px; color: #d97b6c; margin-top: 12px; min-height: 16px; }
@@ -69,19 +89,6 @@
     background: var(--bg-deep);
   }
   .flower-screen.collapsing { opacity: 0; transform: scale(0.9); }
-
-  .flower-title {
-    position: absolute; top: 4%; left: 0; right: 0;
-    font-family: 'Karla', sans-serif; font-size: 14px; letter-spacing: 0.16em;
-    color: var(--gold); font-weight: 600; text-align: center;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.6);
-  }
-  .flower-sub {
-    position: absolute; top: 7%; left: 0; right: 0;
-    font-family: 'Karla', sans-serif; font-size: 12.5px;
-    color: rgba(233,228,217,0.7); text-align: center;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
-  }
 
   .flower-wrap {
     position: relative;
@@ -113,15 +120,16 @@
   .petal-btn.locked { cursor: default; }
 
   .petal-glow {
-    position: absolute; inset: -30%; border-radius: 50%;
+    position: absolute; inset: -8%; border-radius: 50%;
     pointer-events: none;
     opacity: 0.55;
-    filter: blur(5px);
+    filter: blur(6px);
+    mix-blend-mode: screen;
     animation: petalBreathe 3.4s ease-in-out infinite;
   }
   @keyframes petalBreathe {
-    0%, 100% { opacity: 0.35; }
-    50% { opacity: 0.55; }
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.6; }
   }
 
   .petal-spark {
@@ -144,14 +152,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .flower-legend {
-    position: absolute; bottom: 3%; left: 0; right: 0;
-    display: flex; gap: 16px;
-    font-family: 'Karla', sans-serif; font-size: 11px; color: rgba(233,228,217,0.6);
-    flex-wrap: wrap; justify-content: center;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
   }
 
   /* ---------- day card screen ---------- */
@@ -212,10 +212,29 @@
 <body>
 
 <div class="gate-overlay" id="gateOverlay">
+  <div class="gate-glow-tr"></div>
+  <div class="gate-glow-bl"></div>
   <div class="gate-box">
-    <div class="gate-mark">13 M✳RRORS</div>
-    <p class="gate-title">Введите ваш код</p>
-    <p class="gate-sub">Персональный код был выслан вам в Telegram. Он нужен, чтобы сайт запомнил именно ваши записи.</p>
+    <div class="gate-mark">13 MIRRORS</div>
+    <div class="gate-tagline">Калейдоскоп твоих миров</div>
+
+    <div class="gate-divider" style="margin-top:20px;">
+      <div class="gate-divider-line"></div>
+      <div class="gate-divider-star">✦</div>
+      <div class="gate-divider-line"></div>
+    </div>
+
+    <p class="gate-title">Размораживаем детство</p>
+    <p class="gate-route">Маршрут Белого Волшебника<br>9–21 сентября</p>
+
+    <div class="gate-divider" style="margin: 36px 0 24px;">
+      <div class="gate-divider-line"></div>
+      <div class="gate-divider-star">✦</div>
+      <div class="gate-divider-line"></div>
+    </div>
+
+    <p class="gate-form-title">Введите ваш код</p>
+    <p class="gate-sub">Он был отправлен вам в Telegram<br>и нужен, чтобы сохранить именно ваши записи.</p>
     <input type="text" class="gate-input" id="gateInput" placeholder="MIRROR-XXXX" autocomplete="off">
     <button class="gate-btn" id="gateBtn">Войти</button>
     <p class="gate-error" id="gateError"></p>
@@ -225,14 +244,7 @@
 <div class="flower-screen hidden" id="flowerScreen">
   <div class="flower-wrap">
     <img src="flower-bg.png" alt="Маршрут 13 дней">
-    <div class="flower-title">13 M✳RRORS</div>
-    <div class="flower-sub">Размораживаем детство · твой маршрут</div>
     <div id="petalsLayer"></div>
-    <div class="flower-legend">
-      <span>знак · день открыт</span>
-      <span>вспышка · сегодня</span>
-      <span>✓ · выполнено</span>
-    </div>
   </div>
 </div>
 
@@ -502,7 +514,7 @@
       if (!isLocked) {
         const glow = document.createElement('div');
         glow.className = 'petal-glow';
-        glow.style.background = 'radial-gradient(circle, transparent 0%, transparent 48%, ' + color + '66 62%, ' + color + '33 78%, transparent 96%)';
+        glow.style.background = 'radial-gradient(circle, ' + color + 'aa 0%, ' + color + '55 55%, transparent 75%)';
         btn.appendChild(glow);
       }
 
