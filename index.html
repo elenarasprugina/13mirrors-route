@@ -409,7 +409,7 @@
 
   // ============================================================
   const SUPABASE_URL = 'https://mtqqkgojrepdhbqkbqic.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable__oUSc-S0xZEDvWgcGubYxQ_F5KjbQ4j';
+  const SUPABASE_ANON_KEY = 'Вsb_publishable__oUSc-S0xZEDvWgcGubYxQ_F5KjbQ4j';
   // ============================================================
 
   // координаты центров лепестков (в процентах от ширины/высоты картинки)
@@ -490,21 +490,12 @@
   let openedDayNumber = null;
 
   // цвет каждого дня — деликатные, приглушённые оттенки
-  const DAY_COLORS = {
-    1:  '#e0574a',
-    2:  '#e3873c',
-    3:  '#e0b53c',
-    4:  '#d6cf3f',
-    5:  '#a8d63f',
-    6:  '#4fd66a',
-    7:  '#3fd6a8',
-    8:  '#3fb8d6',
-    9:  '#3f8fd6',
-    10: '#4f6fe0',
-    11: '#7a5ce0',
-    12: '#b05ce0',
-    13: '#f5efe0'
-  };
+  const DREAMSPELL_CYCLE = ['#f0ece0', '#4f7fe0', '#e8d24a', '#e0503f']; // белый, синий, жёлтый, красный
+  const DAY_COLORS = {};
+  for (let d = 1; d <= 12; d++) {
+    DAY_COLORS[d] = DREAMSPELL_CYCLE[(d - 1) % 4];
+  }
+  DAY_COLORS[13] = '#f5efe0';
 
   // четырёхлучевая вспышка — активный день
   const SPARK_SVG =
@@ -532,7 +523,7 @@
       const dotsStartX = pad + (contentWidth - dotsWidth) / 2 + dotR;
       for (let i = 0; i < dots; i++) {
         const cx = dotsStartX + i * dotGap;
-        svg += '<circle cx="' + cx + '" cy="' + (pad + dotR) + '" r="' + dotR + '" fill="' + color + '" opacity="0.95"/>';
+        svg += '<circle cx="' + cx + '" cy="' + (pad + dotR) + '" r="' + dotR + '" fill="' + color + '" stroke="#1c1e29" stroke-width="0.8" opacity="0.98"/>';
       }
     }
     if (bars > 0) {
@@ -541,7 +532,7 @@
       const barX = pad + (contentWidth - barW) / 2;
       for (let i = 0; i < bars; i++) {
         const by = barsStartY + i * (barH + barGap);
-        svg += '<rect x="' + barX + '" y="' + by + '" width="' + barW + '" height="' + barH + '" rx="' + (barH/2) + '" fill="' + color + '" opacity="0.95"/>';
+        svg += '<rect x="' + barX + '" y="' + by + '" width="' + barW + '" height="' + barH + '" rx="' + (barH/2) + '" fill="' + color + '" stroke="#1c1e29" stroke-width="0.8" opacity="0.98"/>';
       }
     }
     svg += '</svg>';
@@ -611,9 +602,9 @@
         mark.appendChild(halo);
         const glyph = document.createElement('div');
         glyph.style.cssText = 'position:relative; width:100%; height:100%;';
-        glyph.innerHTML = buildMayaNumeralSVG(day, color);
+        glyph.innerHTML = buildMayaNumeralSVG(day, '#d8c9a3');
         mark.appendChild(glyph);
-        positionOutward(mark, day, 62);
+        positionOutward(mark, day, 82);
         btn.appendChild(mark);
       }
 
