@@ -173,21 +173,62 @@ body{
 }
 
 @media (max-width:520px){
-  .route-screen-header{left:6%;right:6%;top:1.4%}
-  .route-brand{display:none}
-  .route-welcome{display:none}
-  .route-today{margin-top:0;padding:.6vh 1.1vh .68vh}
-  .route-day-meta{display:none}
-  .route-hint{bottom:4.3%}
-}
+  body{
+    display:block;
+    min-height:100svh;
+    overflow:hidden;
+  }
 
-/* Совсем маленькие / короткие экраны — подстраховка, чтобы плашка
-   гарантированно не залезала на верхний лепесток (день 1). */
-@media (max-width:520px) and (max-height:700px){
-  .route-screen-header{top:.8%}
-  .route-today{padding:.5vh 1vh .55vh}
-  .route-today-label{font-size:9px;margin-bottom:.15vh}
-  .route-day-main{font-size:12px}
+  .stage{
+    width:100vw;
+    height:100svh;
+    min-height:620px;
+    aspect-ratio:auto;
+  }
+
+  .route-screen-header{
+    left:5%;
+    right:5%;
+    top:2.2%;
+  }
+
+  .route-brand{
+    margin-bottom:.35vh;
+    font-size:clamp(9px,1.35vh,11px);
+    letter-spacing:.16em;
+  }
+
+  .route-welcome{
+    font-size:clamp(25px,4.1vh,31px);
+    line-height:1;
+  }
+
+  .route-today{
+    margin-top:.75vh;
+    padding:.58vh 1.15vh .64vh;
+  }
+
+  .route-today-label{
+    margin-bottom:.16vh;
+    font-size:clamp(8px,1.1vh,9.5px);
+  }
+
+  .route-day-main{
+    font-size:clamp(11px,1.65vh,13.5px);
+  }
+
+  .route-day-meta{
+    margin-top:.12vh;
+    font-size:clamp(9px,1.25vh,10.5px);
+  }
+
+  .route-hint{
+    left:8%;
+    right:8%;
+    bottom:2.8%;
+    font-size:clamp(9px,1.3vh,11px);
+    letter-spacing:.04em;
+  }
 }
 
 .rays{
@@ -927,7 +968,7 @@ function updateRouteScreenInfo(){
 
   routeTodayLabel.textContent = 'Сегодня открыт';
   routeDayMain.textContent = `День ${currentOpenDay} · ${info.seal}`;
-  routeDayMeta.textContent = `Печать · ${info.seal}   ·   Тон ${currentOpenDay} · ${info.tone}`;
+  routeDayMeta.textContent = `Тон ${currentOpenDay} · ${info.tone}`;
   routeHint.textContent = currentOpenDay <= 12
     ? 'Нажми на светящийся лепесток, чтобы войти в день'
     : 'Сегодня открыт центр маршрута';
