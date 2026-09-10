@@ -184,6 +184,24 @@ textarea::placeholder { color: var(--ink-soft); opacity:0.8; }
 footer { position:relative; z-index:2; display:flex; justify-content:center; padding:34px 26px 40px; }
 footer img { height: 30px; animation: breathe 5s ease-in-out infinite; }
 @keyframes breathe { 0%,100% { opacity:0.55; } 50% { opacity:0.95; } }
+/* ====== АДАПТИВНОСТЬ ДЛЯ БОЛЬШИХ ЭКРАНОВ (планшет/ноутбук/десктоп) ======
+   Мобильная вёрстка не трогается — просто добавляем более широкую колонку
+   вместо узкой мобильной, растянутой по центру чёрного фона. */
+@media (min-width:720px){
+  .page{ max-width:640px; }
+  .hero-wrap{ height:380px; }
+  .content{ padding:14px 44px 0; }
+  h1{ font-size:32px; }
+  p.body-text{ font-size:17px; }
+  .thought{ font-size:22px; }
+  .card{ height:185px; }
+}
+@media (min-width:1080px){
+  .page{ max-width:720px; }
+  .hero-wrap{ height:440px; }
+  .content{ padding:18px 56px 0; }
+  h1{ font-size:35px; }
+}
 </style>
 </head>
 <body>
@@ -421,6 +439,7 @@ function resetCards() {
         if(rq){ rq.classList.add('unlocked'); rq.style.maxHeight=''; rq.style.opacity=''; }
         if(rw) rw.classList.add('unlocked');
         setReflectionText(entry.reflection_text);
+        if(typeof updateCounter==='function') updateCounter();
       }
       return;
     }
@@ -457,6 +476,19 @@ function resetCards() {
 
     post({type:'13mirrors:day-ready', day: DAY});
   });
+
+  var counterEl = document.querySelector('.counter');
+  var reflectionTa = document.getElementById('reflectionTextarea');
+  function updateCounter(){
+    if(counterEl && reflectionTa){
+      var max = reflectionTa.getAttribute('maxlength') || 500;
+      counterEl.textContent = reflectionTa.value.length + '/' + max;
+    }
+  }
+  if(reflectionTa){
+    reflectionTa.addEventListener('input', updateCounter);
+    updateCounter();
+  }
 
   var __origReveal = window.reveal;
   window.reveal = function(letter){
