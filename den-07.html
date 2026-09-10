@@ -173,6 +173,24 @@ textarea::placeholder { color: var(--ink-soft); opacity:0.8; }
 footer { position:relative; z-index:2; display:flex; justify-content:center; padding:34px 26px 40px; }
 footer img { height: 30px; animation: breathe 5s ease-in-out infinite; }
 @keyframes breathe { 0%,100% { opacity:0.55; } 50% { opacity:0.95; } }
+/* ====== АДАПТИВНОСТЬ ДЛЯ БОЛЬШИХ ЭКРАНОВ (планшет/ноутбук/десктоп) ======
+   Мобильная вёрстка не трогается — просто добавляем более широкую колонку
+   вместо узкой мобильной, растянутой по центру чёрного фона. */
+@media (min-width:720px){
+  .page{ max-width:640px; }
+  .hero-wrap{ height:380px; }
+  .content{ padding:14px 44px 0; }
+  h1{ font-size:32px; }
+  p.body-text{ font-size:17px; }
+  .thought{ font-size:22px; }
+  .card{ height:185px; }
+}
+@media (min-width:1080px){
+  .page{ max-width:720px; }
+  .hero-wrap{ height:440px; }
+  .content{ padding:18px 56px 0; }
+  h1{ font-size:35px; }
+}
 </style>
 </head>
 <body>
@@ -256,9 +274,9 @@ function dropOnLoad() {{
   const startX = startRect.left - pageRect.left + startRect.width / 2 - 5;
   const startY = startRect.bottom - pageRect.top - 6;
   const endY = endRect.top - pageRect.top + 10;
-  droplet.style.transform = `translate(${{startX}}px, ${{startY}}px)`;
+  droplet.style.transform = `translate(${startX}px, ${startY}px)`;
   droplet.classList.add('falling');
-  requestAnimationFrame(() => {{ droplet.style.transform = `translate(${{startX}}px, ${{endY}}px)`; }});
+  requestAnimationFrame(() => { droplet.style.transform = `translate(${startX}px, ${endY}px)`; });
   setTimeout(() => {{
     droplet.classList.add('arrived');
     document.getElementById('reflectionQ').classList.add('unlocked');
@@ -267,6 +285,93 @@ function dropOnLoad() {{
 }}
 window.addEventListener('load', () => setTimeout(dropOnLoad, 400));
 
+</script>
+<script>
+(function(){
+  function getDayNumber(){
+    var t = document.querySelector('.topbar .title');
+    if(!t) return null;
+    var m = t.textContent.match(/\d+/);
+    return m ? parseInt(m[0],10) : null;
+  }
+  var DAY = getDayNumber();
+
+  function post(msg){
+    try{ window.parent.postMessage(msg, '*'); }catch(e){}
+  }
+  function getReflectionText(){
+    var el = document.getElementById('reflectionTextarea');
+    return el ? el.value : '';
+  }
+  function setReflectionText(v){
+    var el = document.getElementById('reflectionTextarea');
+    if(el) el.value = v || '';
+  }
+
+  var counterEl = document.querySelector('.counter');
+  var reflectionTa = document.getElementById('reflectionTextarea');
+  function updateCounter(){
+    if(counterEl && reflectionTa){
+      var max = reflectionTa.getAttribute('maxlength') || 500;
+      counterEl.textContent = reflectionTa.value.length + '/' + max;
+    }
+  }
+  if(reflectionTa){
+    reflectionTa.addEventListener('input', updateCounter);
+    updateCounter();
+  }
+
+  // День 7 без выбора карты — при восстановлении просто показываем
+  // уже открытое поле следа и вставляем сохранённый текст.
+  window.addEventListener('message', function(event){
+    var msg = event.data || {};
+    if(msg.type === '13mirrors:hydrate'){
+      var entry = msg.entry;
+      if(entry){
+        var droplet = document.getElementById('droplet');
+        if(droplet) droplet.classList.add('arrived');
+        var rq = document.getElementById('reflectionQ');
+        var rw = document.getElementById('reflectionWrap');
+        if(rq) rq.classList.add('unlocked');
+        if(rw) rw.classList.add('unlocked');
+        setReflectionText(entry.reflection_text);
+        updateCounter();
+      }
+      return;
+    }
+    if(msg.type === '13mirrors:save-result'){
+      var btn = document.querySelector('.save-btn');
+      if(msg.ok){
+        if(btn){ btn.textContent = 'Сохранено ✓'; }
+      } else {
+        if(btn){ btn.disabled = false; }
+        alert('Не удалось сохранить. Попробуйте ещё раз.');
+      }
+      return;
+    }
+  });
+
+  function doSave(){
+    var reflection = getReflectionText();
+    var btn = document.querySelector('.save-btn');
+    if(btn) btn.disabled = true;
+    post({type:'13mirrors:save', day: DAY, card: null, reflection: reflection});
+  }
+
+  function doBack(){
+    post({type:'13mirrors:return', day: DAY});
+  }
+
+  window.addEventListener('load', function(){
+    var saveBtn = document.querySelector('.save-btn');
+    if(saveBtn) saveBtn.addEventListener('click', doSave);
+
+    var backBtn = document.querySelector('.topbar .icon-btn');
+    if(backBtn) backBtn.addEventListener('click', doBack);
+
+    post({type:'13mirrors:day-ready', day: DAY});
+  });
+})();
 </script>
 </body>
 </html>
