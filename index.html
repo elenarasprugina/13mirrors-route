@@ -1132,7 +1132,17 @@ if(wwEnterRouteButton){
 async function enterWithCode(code){
   gateBtn.disabled=true;gateError.textContent='';
   try{
-    await claimCode(code);currentCode=code;localStorage.setItem(CODE_STORAGE_KEY,code);
+    let participantId;
+    try{
+      participantId = await claimCode(code);
+    }catch(firstErr){
+      if(firstErr.message==='not_found') throw firstErr;
+      // В браузере могла остаться старая/битая анонимная сессия —
+      // тихо сбрасываем её и пробуем войти ещё раз, один раз, без участия человека.
+      try{ await supabaseClient.auth.signOut(); }catch(e){}
+      participantId = await claimCode(code);
+    }
+    currentCode=code;localStorage.setItem(CODE_STORAGE_KEY,code);
     await loadRouteState();
     await seedTransferredFromSavedEntries();
     gateOverlay.style.display='none';showThresholdOrFlower();
@@ -1175,8 +1185,9 @@ window.addEventListener('message',async(event)=>{
 
 window.addEventListener('resize',()=>requestAnimationFrame(render));
 
-document.getElementById('switchCodeBtn').addEventListener('click',()=>{
+document.getElementById('switchCodeBtn').addEventListener('click', async ()=>{
   localStorage.removeItem(CODE_STORAGE_KEY);
+  try{ if(supabaseClient) await supabaseClient.auth.signOut(); }catch(e){}
   location.reload();
 });
 
