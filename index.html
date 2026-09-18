@@ -335,6 +335,247 @@ body{
   100%{box-shadow:0 0 8px rgba(247,243,235,.08)}
 }
 
+/* ============================================================
+   ДЕНЬ 13 · СБОРКА
+   Центр цветка становится точкой входа в финальный день.
+   ============================================================ */
+.center.active-center{
+  cursor:pointer;
+  border-color:rgba(255,252,244,.98);
+  box-shadow:
+    0 0 14px rgba(247,243,235,.22),
+    0 0 34px rgba(244,214,220,.14),
+    inset 0 0 10px rgba(247,243,235,.06);
+  animation:centerInvite 4.6s ease-in-out infinite;
+}
+@keyframes centerInvite{
+  0%,100%{box-shadow:0 0 14px rgba(247,243,235,.22),0 0 34px rgba(244,214,220,.14),inset 0 0 10px rgba(247,243,235,.06);}
+  50%{box-shadow:0 0 22px rgba(247,243,235,.36),0 0 52px rgba(244,214,220,.24),inset 0 0 14px rgba(247,243,235,.1);}
+}
+@media (hover:hover){
+  .center.active-center:hover{
+    box-shadow:0 0 26px rgba(247,243,235,.42),0 0 60px rgba(244,214,220,.28),inset 0 0 16px rgba(247,243,235,.12);
+  }
+}
+@media (hover:none){
+  .center.active-center{ animation-duration:2.6s; }
+}
+.center.assembly-done{
+  cursor:pointer;
+  border-color:rgba(247,243,235,.85);
+  box-shadow:0 0 9px rgba(247,243,235,.1);
+}
+.center.assembly-burst{
+  animation:assemblyBurst .82s ease-out forwards;
+}
+@keyframes assemblyBurst{
+  0%{box-shadow:0 0 14px rgba(247,243,235,.22);}
+  55%,100%{box-shadow:0 0 46px rgba(255,252,244,.85),0 0 90px rgba(244,214,220,.5);}
+}
+.stage.assembly-gathering #petals,
+.stage.assembly-gathering #rays{
+  transition:opacity .78s ease;
+  opacity:0;
+}
+.stage.assembly-gathering .route-screen-header,
+.stage.assembly-gathering .route-hint,
+.stage.assembly-gathering #switchCodeBtn{
+  transition:opacity .5s ease;
+  opacity:0;
+  pointer-events:none;
+}
+@media (prefers-reduced-motion:reduce){
+  .center.active-center{ animation:none; box-shadow:0 0 18px rgba(247,243,235,.28),0 0 40px rgba(244,214,220,.18); }
+  .stage.assembly-gathering #petals,
+  .stage.assembly-gathering #rays{ transition-duration:.2s; }
+  .center.assembly-burst{ animation-duration:.2s; }
+}
+
+.assembly-shell{
+  position:fixed;inset:0;z-index:70;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(16,19,26,0);
+  overflow:hidden;
+  opacity:0;
+  transition:opacity .45s ease, background-color .7s ease;
+  /* Реальные размеры финального изображения при object-fit:contain —
+     нужны детям (.assembly-caption, .assembly-center-logo), чтобы
+     привязываться к истинным краям картинки, а не к краю экрана. */
+  --assembly-img-h: min(100vh, calc(100vw * 1660 / 1244));
+  --assembly-img-w: min(100vw, calc(100vh * 1244 / 1660));
+}
+.assembly-shell.show{display:flex;opacity:1}
+.assembly-shell.media-phase{background:#10131a}
+.assembly-shell video,
+#assemblyFinalImg{
+  position:absolute;inset:0;margin:auto;
+  width:min(100%, calc(100vh * 1244 / 1660));
+  height:min(100%, calc(100vw * 1660 / 1244));
+  max-width:100%;max-height:100%;
+  object-fit:contain;
+  opacity:0;
+}
+#assemblyVideo{
+  z-index:1;
+  transition:opacity .52s ease, filter 3.35s cubic-bezier(.2,.65,.2,1), transform 3.35s cubic-bezier(.2,.65,.2,1);
+  filter:blur(11px) brightness(.92) saturate(.94);
+  transform:scale(1.02);
+}
+#assemblyVideo.show{opacity:1}
+#assemblyVideo.resolved{
+  filter:blur(0) brightness(1) saturate(1);
+  transform:scale(1);
+}
+
+/* Мягкое проявление через почти невидимый круг с очень мягкой границей. */
+#assemblyRevealVeil{
+  position:absolute;inset:0;margin:auto;
+  width:min(100%, calc(100vh * 1244 / 1660));
+  height:min(100%, calc(100vw * 1660 / 1244));
+  max-width:100%;max-height:100%;
+  z-index:2;
+  pointer-events:none;
+  opacity:1;
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(16,19,26,.00) 0 18%,
+      rgba(16,19,26,.010) 26%,
+      rgba(16,19,26,.03) 35%,
+      rgba(16,19,26,.08) 46%,
+      rgba(16,19,26,.17) 58%,
+      rgba(16,19,26,.30) 70%,
+      rgba(16,19,26,.48) 81%,
+      rgba(16,19,26,.69) 91%,
+      rgba(16,19,26,.88) 100%);
+  filter:blur(68px);
+  transform:scale(1.0);
+  transition:opacity 3.9s ease, filter 3.9s ease, transform 3.9s ease;
+}
+#assemblyRevealVeil.reveal{
+  opacity:0;
+  filter:blur(96px);
+  transform:scale(1.16);
+}
+
+#assemblyFinalImg{
+  z-index:3;
+  transition:opacity .52s ease;
+}
+#assemblyFinalImg.show{opacity:1}
+
+/* Чистая подпись в левом верхнем углу: тонкая, без обводки, не заходит на лепестки. */
+.assembly-caption{
+  position:absolute;
+  z-index:5;
+  width:min(38vw, 420px);
+  left:calc((100vw - var(--assembly-img-w)) / 2 + 6.2%);
+  top:calc((100vh - var(--assembly-img-h)) / 2 + 8.6%);
+  display:flex;
+  justify-content:flex-start;
+  align-items:flex-start;
+  opacity:0;
+  transform:translateY(-8px);
+  transition:opacity .96s ease, transform .96s ease;
+  pointer-events:none;
+}
+.assembly-caption.show{
+  opacity:1;
+  transform:translateY(0);
+}
+.assembly-caption__lines{
+  display:inline-flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:8px;
+  width:max-content;
+  max-width:100%;
+}
+.assembly-caption__route,
+.assembly-caption__keeper{
+  display:inline-block;
+  white-space:nowrap;
+  font-family:Baskerville, "Baskerville Old Face", "Times New Roman", Georgia, serif;
+  color:#B89586;
+  letter-spacing:.01em;
+  transform-origin:left center;
+}
+.assembly-caption__route{
+  font-size:clamp(24px, 2.65vh, 34px);
+  line-height:1.14;
+  font-weight:400;
+}
+.assembly-caption__keeper{
+  font-size:clamp(22px, 2.4vh, 30px);
+  line-height:1.18;
+  font-style:italic;
+  font-weight:400;
+  opacity:.96;
+}
+/* Фирменный знак в правом нижнем углу — отдельно от сердцевины цветка. */
+.assembly-center-logo{
+  position:absolute;
+  z-index:5;
+  right:calc((100vw - var(--assembly-img-w)) / 2 + 6.2%);
+  bottom:calc((100vh - var(--assembly-img-h)) / 2 + 8.6%);
+  width:min(22vw, 160px);
+  max-width:160px;
+  min-width:105px;
+  height:auto;
+  object-fit:contain;
+  opacity:0;
+  transition:opacity .9s ease;
+  pointer-events:none;
+}
+.assembly-center-logo.show{opacity:1}
+
+@media(max-width:700px){
+  .assembly-caption{
+    width:min(46vw, 200px);
+    left:calc(
+      (100vw - var(--assembly-img-w)) / 2
+      + 22px
+      + env(safe-area-inset-left)
+    );
+    /* top = отступ до истинного верхнего края картинки (letterbox-gap)
+       + небольшой фиксированный запас (22px) внутрь тёмной зоны у самого
+       верха изображения — выше лепестков, но ещё внутри картинки. */
+    top:calc(
+      (100vh - var(--assembly-img-h)) / 2
+      + 22px
+      + env(safe-area-inset-top)
+    );
+  }
+  .assembly-caption__lines{gap:4px}
+  .assembly-caption__route{font-size:clamp(15px, 2vh, 19px)}
+  .assembly-caption__keeper{font-size:clamp(13px, 1.75vh, 17px)}
+  .assembly-center-logo{
+    width:min(26vw, 120px);
+    max-width:120px;
+    min-width:84px;
+    right:calc(
+      (100vw - var(--assembly-img-w)) / 2
+      + 22px
+      + env(safe-area-inset-right)
+    );
+    /* bottom = отступ до истинного нижнего края картинки (letterbox-gap)
+       + небольшой фиксированный запас (22px) внутрь тёмной зоны у самого
+       низа изображения — ниже лепестков, но ещё внутри картинки. */
+    bottom:calc(
+      (100vh - var(--assembly-img-h)) / 2
+      + 22px
+      + env(safe-area-inset-bottom)
+    );
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  #assemblyVideo,
+  #assemblyRevealVeil,
+  #assemblyFinalImg,
+  .assembly-caption,
+  .assembly-center-logo{transition-duration:.25s}
+}
+
 .comet{
   position:absolute; left:0; top:0;
   width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%;
@@ -556,12 +797,6 @@ body{
 .day-frame-shell{position:fixed;inset:0;z-index:60;display:none;align-items:stretch;justify-content:center;background:#1c1f24}
 .day-frame-shell.show{display:flex}
 .day-frame-shell iframe{display:block;width:min(100%,460px);height:100%;border:0;background:#1c1f24}
-@media (min-width:720px){
-  .day-frame-shell iframe{width:min(100%,640px);}
-}
-@media (min-width:1080px){
-  .day-frame-shell iframe{width:min(100%,720px);}
-}
 .day-load-error{
   display:none;
   width:min(100%,460px);
@@ -787,6 +1022,19 @@ body{
   </div>
 </div>
 
+<div class="assembly-shell" id="assemblyShell" aria-hidden="true">
+  <video id="assemblyVideo" playsinline muted></video>
+  <div id="assemblyRevealVeil" aria-hidden="true"></div>
+  <img id="assemblyFinalImg" alt="">
+  <div class="assembly-caption" id="assemblyCaption">
+    <div class="assembly-caption__lines" id="assemblyCaptionLines">
+      <div class="assembly-caption__route" id="assemblyRouteLine">Маршрут пройден.</div>
+      <div class="assembly-caption__keeper" id="assemblyKeeperLine">Увидимся за поворотом…</div>
+    </div>
+  </div>
+  <img class="assembly-center-logo" id="assemblyLogo" src="13mirrors_logo_rose_gold.png" alt="13 MIRRORS">
+</div>
+
 <script>
 
 const LIBRARY_SOURCES = [
@@ -797,6 +1045,15 @@ const SUPABASE_URL = 'https://mtqqkgojrepdhbqkbqic.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__oUSc-S0xZEDvWgcGubYxQ_F5KjbQ4j';
 const CODE_STORAGE_KEY = '13mirrors-participant-code';
 const THRESHOLD_SEEN_PREFIX = '13mirrors-threshold-seen:';
+const ASSEMBLY_DAY = 13;
+const ASSEMBLY_VIDEO_SRC = 'assembly-bloom-v3.mp4';
+const ASSEMBLY_FINAL_IMG_SRC = 'assembly-final-frame-v2.png';
+
+// TEST-ONLY: отдельный GitHub Pages стенд для проверки Дня 13.
+// На рабочем сайте этот флаг всегда false.
+const DAY13_TEST_SITE = false;
+// Production integration: Day 13 uses the existing Supabase save_entry/get_completed_days flow.
+// localStorage remains a cache; completion is added locally only after save_entry succeeds.
 
 const POS = {"1":{"x":50.5,"y":24.5},"2":{"x":66.2,"y":29.5},"3":{"x":79.6,"y":39.2},"4":{"x":84.6,"y":50.0},"5":{"x":79.6,"y":61.8},"6":{"x":66.2,"y":71.2},"7":{"x":50.5,"y":74.5},"8":{"x":34.8,"y":71.2},"9":{"x":21.4,"y":61.8},"10":{"x":16.4,"y":50.0},"11":{"x":21.4,"y":38.2},"12":{"x":34.8,"y":28.5},"13":{"x":50.5,"y":50.0}};
 const COLORS = {"1":"#ff6f91","2":"#ff865c","3":"#ffb84d","4":"#f1d95c","5":"#a9d86e","6":"#63d3a2","7":"#59ced0","8":"#62a9e8","9":"#7188e8","10":"#9173db","11":"#bf73d7","12":"#e06fae"};
@@ -838,6 +1095,15 @@ const routeTodayLabel = document.getElementById('routeTodayLabel');
 const routeDayMain = document.getElementById('routeDayMain');
 const routeDayMeta = document.getElementById('routeDayMeta');
 const routeHint = document.getElementById('routeHint');
+const assemblyShell = document.getElementById('assemblyShell');
+const assemblyVideo = document.getElementById('assemblyVideo');
+const assemblyRevealVeil = document.getElementById('assemblyRevealVeil');
+const assemblyFinalImg = document.getElementById('assemblyFinalImg');
+const assemblyCaption = document.getElementById('assemblyCaption');
+const assemblyCaptionLines = document.getElementById('assemblyCaptionLines');
+const assemblyRouteLine = document.getElementById('assemblyRouteLine');
+const assemblyKeeperLine = document.getElementById('assemblyKeeperLine');
+const assemblyLogo = document.getElementById('assemblyLogo');
 
 let supabaseClient = null;
 let currentCode = null;
@@ -845,6 +1111,9 @@ let currentOpenDay = 0;
 let currentDayPage = null;
 let isAnimating = false;
 let rayGeom = {};
+let assemblyRunning = false;
+let assemblyPreloadStarted = false;
+const prefersReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 center.style.left = POS[13].x + '%';
 center.style.top = POS[13].y + '%';
@@ -876,6 +1145,178 @@ function stateFor(day,transferred){
   if(transferred.has(day)) return 'done';
   if(day===currentOpenDay) return 'active';
   return 'closed';
+}
+
+// День 13 «Сборка» следует времени маршрута, а не индивидуальному темпу участника:
+// когда ведущая вручную открывает День 13, сердцевина доступна всем участникам,
+// даже если конкретный участник пропустил один или несколько предыдущих дней.
+// completed = запись day_number=13 в Supabase, подтянутая в transferred.
+// Источник истины остаётся в Supabase/entries — эта функция читает его как есть.
+function isAssemblyCompleted(transferred){
+  return transferred.has(ASSEMBLY_DAY);
+}
+
+// === TEST BUILD ONLY (white-wizard-day13-test) ============================
+// Заставляет ЭТУ тестовую страницу заново предлагать полную анимацию Сборки
+// по клику на сердцевину, даже если в Supabase уже есть запись
+// day13/assembly/completed. Ничего не удаляет и не переписывает в базе —
+// влияет только на то, как клиент интерпретирует уже прочитанный
+// transferred при выборе между replay и мгновенным финальным экраном.
+// В боевой ветке (white-wizard, продакшен) флаг должен быть false
+// (или блок вообще не переносить туда) — п.10 исходного ТЗ требует,
+// чтобы после assemblyCompleted===true Сборка не проигрывалась повторно.
+const TEST_FORCE_ASSEMBLY_REPLAY = false;
+function isAssemblyCompletedForUI(transferred){
+  if(TEST_FORCE_ASSEMBLY_REPLAY) return false;
+  return isAssemblyCompleted(transferred);
+}
+
+// Завершённый маршрут становится доступен в UI только после того,
+// как глобально открыт День 13. Тестовые/старые записи Day 13 не должны
+// преждевременно включать ретроспективный режим на Днях 1–12.
+function isRouteCompletedForUI(transferred){
+  return currentOpenDay === ASSEMBLY_DAY && isAssemblyCompletedForUI(transferred);
+}
+// ============================================================================
+
+function isAssemblyReady(transferred){
+  // Время маршрута независимо от индивидуального прохождения: достаточно,
+  // чтобы ведущая открыла День 13 и этот участник ещё не завершил Сборку.
+  return currentOpenDay===ASSEMBLY_DAY && !isAssemblyCompletedForUI(transferred);
+}
+function wait(ms){ return new Promise(resolve=>setTimeout(resolve,ms)); }
+
+function preloadAssemblyAssets(){
+  if(assemblyPreloadStarted) return;
+  assemblyPreloadStarted = true;
+  assemblyVideo.setAttribute('preload','auto');
+  assemblyVideo.src = ASSEMBLY_VIDEO_SRC;
+  assemblyVideo.load();
+  assemblyFinalImg.src = ASSEMBLY_FINAL_IMG_SRC;
+}
+
+// Мгновенно показывает финальный экран Сборки без анимации —
+// для уже завершивших маршрут участников (п.10 ТЗ).
+function renderAssemblyFinalState(){
+  thresholdFrameShell.classList.remove('show');
+  thresholdFrameShell.setAttribute('aria-hidden','true');
+  if(!assemblyFinalImg.src) assemblyFinalImg.src = ASSEMBLY_FINAL_IMG_SRC;
+
+  assemblyShell.classList.add('show','media-phase');
+  assemblyShell.setAttribute('aria-hidden','false');
+
+  assemblyVideo.classList.remove('show','resolved');
+  assemblyVideo.pause();
+  assemblyRevealVeil.classList.add('reveal');
+  assemblyFinalImg.classList.add('show');
+  fitAssemblyCaptionLines();
+  assemblyCaption.classList.add('show');
+  assemblyLogo.classList.add('show');
+}
+
+function fitAssemblyCaptionLines(){
+  if(!assemblyRouteLine || !assemblyKeeperLine) return;
+  assemblyKeeperLine.style.transform = 'none';
+  const routeWidth = assemblyRouteLine.getBoundingClientRect().width;
+  const keeperWidth = assemblyKeeperLine.getBoundingClientRect().width;
+  if(routeWidth > 0 && keeperWidth > 0){
+    const ratio = Math.min(1, routeWidth / keeperWidth);
+    assemblyKeeperLine.style.transform = `scaleX(${ratio})`;
+  }
+}
+
+function playAssemblyVideo(){
+  return new Promise(resolve=>{
+    let settled=false;
+    const finish=()=>{ if(settled)return; settled=true; assemblyVideo.removeEventListener('ended',onEnded); resolve(); };
+    const onEnded=()=>finish();
+    assemblyVideo.addEventListener('ended',onEnded);
+    try{ assemblyVideo.currentTime = 0; }catch(e){}
+    const playPromise = assemblyVideo.play();
+    assemblyVideo.classList.add('show');
+    if(playPromise && playPromise.catch) playPromise.catch(()=>finish());
+    // Защита: если видео не пришлёт 'ended' (ошибка декодирования и т.п.),
+    // сценарий всё равно должен дойти до финального кадра.
+    setTimeout(finish, 17000);
+  });
+}
+
+async function persistAssemblyCompletion(){
+  try{
+    await saveEntry({ day: ASSEMBLY_DAY, card: 'assembly', reflection: 'completed' });
+    const transferred = getTransferred();
+    transferred.add(ASSEMBLY_DAY);
+    setTransferred(transferred);
+  }catch(e){
+    // Источник истины — Supabase. Если запись не удалась, локально ничего не подделываем;
+    // при следующем входе seedTransferredFromSavedEntries либо подтвердит завершение, либо нет.
+    console.error('save_entry (assembly) failed', e);
+  }
+}
+
+async function startAssembly(){
+  const transferred = getTransferred();
+  if(assemblyRunning || isAnimating || !isAssemblyReady(transferred)) return;
+  assemblyRunning = true;
+  isAnimating = true;
+
+  preloadAssemblyAssets();
+
+  // 1) Схематичный цветок собирается в сердцевину.
+  stage.classList.add('assembly-gathering');
+  center.classList.add('assembly-burst');
+  await wait(prefersReducedMotion ? 260 : 820);
+
+  // 2) Включаем живой цветок и очень мягкое круговое проявление без жёсткой границы.
+  assemblyShell.classList.add('show','media-phase');
+  assemblyShell.setAttribute('aria-hidden','false');
+
+  assemblyFinalImg.classList.remove('show');
+  assemblyCaption.classList.remove('show');
+  assemblyLogo.classList.remove('show');
+  assemblyRevealVeil.classList.remove('reveal');
+  assemblyVideo.classList.remove('resolved');
+  assemblyVideo.classList.add('show');
+
+  const videoFinished = playAssemblyVideo();
+
+  await wait(prefersReducedMotion ? 40 : 90);
+  stage.classList.remove('assembly-gathering');
+  center.classList.remove('assembly-burst');
+
+  await wait(prefersReducedMotion ? 120 : 360);
+  assemblyRevealVeil.classList.add('reveal');
+  assemblyVideo.classList.add('resolved');
+
+  // 3) Подпись появляется позже — когда цветок уже почти раскрылся.
+  await wait(prefersReducedMotion ? 360 : 8000);
+  fitAssemblyCaptionLines();
+  assemblyCaption.classList.add('show');
+
+  // 4) Финальная точка — фирменный знак 13 MIRRORS в центре цветка.
+  await wait(prefersReducedMotion ? 100 : 420);
+  assemblyLogo.classList.add('show');
+
+  await videoFinished;
+
+  // 4) Последний кадр остаётся, подпись и логотип остаются поверх.
+  assemblyFinalImg.classList.add('show');
+  await wait(prefersReducedMotion ? 260 : 520);
+  assemblyVideo.classList.remove('show','resolved');
+  assemblyVideo.pause();
+
+  await persistAssemblyCompletion();
+
+  assemblyRunning = false;
+  isAnimating = false;
+}
+
+function onCenterActivate(){
+  if(isAnimating || assemblyRunning) return;
+  if(currentOpenDay !== ASSEMBLY_DAY) return;
+  const transferred = getTransferred();
+  if(isRouteCompletedForUI(transferred)){ renderAssemblyFinalState(); return; }
+  if(isAssemblyReady(transferred)){ startAssembly(); }
 }
 
 function computeGeometry(){
@@ -935,9 +1376,11 @@ function updateRouteScreenInfo(){
   routeTodayLabel.textContent = 'Сегодня открыт';
   routeDayMain.textContent = `День ${currentOpenDay} · ${info.seal}`;
   routeDayMeta.textContent = `Печать · ${info.seal}   ·   Тон ${currentOpenDay} · ${info.tone}`;
-  routeHint.textContent = currentOpenDay <= 12
-    ? 'Нажми на светящийся лепесток, чтобы войти в день'
-    : 'Сегодня открыт центр маршрута';
+  routeHint.textContent = isRouteCompletedForUI(getTransferred())
+    ? 'Путь пройден — можно вернуться в любой день'
+    : (currentOpenDay <= 12
+      ? 'Нажми на светящийся лепесток, чтобы войти в день'
+      : 'Сегодня открыт центр маршрута');
 }
 
 function render(){
@@ -945,6 +1388,7 @@ function render(){
   updateRouteScreenInfo();
   computeGeometry();
   const transferred=getTransferred();
+  const retrospectiveMode = isRouteCompletedForUI(transferred);
   petalsLayer.innerHTML='';raysSvg.innerHTML='';centerAmbient.innerHTML='';
   for(let day=1;day<=12;day++){
     const state=stateFor(day,transferred);
@@ -959,19 +1403,35 @@ function render(){
     g.append(halo,core);raysSvg.appendChild(g);
     const petal=document.createElement('div');
     petal.className='node petal '+state;
-    if(day===currentOpenDay&&state==='done')petal.classList.add('open-now');
+    if((day===currentOpenDay||retrospectiveMode)&&state==='done')petal.classList.add('open-now');
     petal.dataset.day=day;petal.style.left=POS[day].x+'%';petal.style.top=POS[day].y+'%';petal.style.setProperty('--c',COLORS[day]);
-    if(day===currentOpenDay) petal.addEventListener('click',()=>{if(!isAnimating)openDay(day);});
+    if(day===currentOpenDay||retrospectiveMode) petal.addEventListener('click',()=>{if(!isAnimating)openDay(day);});
     petalsLayer.appendChild(petal);
     if(transferred.has(day))centerAmbient.appendChild(makeStoredLight(day));
   }
 
-  // День 13 — центр. Отдельной HTML-страницы дня 13 в текущем комплекте пока нет.
-  center.classList.toggle('active-center', currentOpenDay===13);
+  // День 13 — центр (Сборка). Активируется, когда ведущая вручную открыла День 13;
+  // индивидуальные пропуски Дней 1–12 не блокируют Сборку. После завершения
+  // центр переходит в спокойное assembly-done.
+  const assemblyReady = isAssemblyReady(transferred);
+  const assemblyDone = isRouteCompletedForUI(transferred);
+  center.classList.toggle('active-center', assemblyReady);
+  center.classList.toggle('assembly-done', assemblyDone);
+  if(assemblyReady || assemblyDone){
+    center.setAttribute('tabindex','0');
+    center.setAttribute('role','button');
+    center.setAttribute('aria-label', assemblyDone ? 'Путь пройден. Открыть завершение.' : 'Собрать цветок');
+  }else{
+    center.removeAttribute('tabindex');
+    center.removeAttribute('role');
+    center.setAttribute('aria-label','Центр цветка');
+  }
+  if(assemblyReady) preloadAssemblyAssets();
 }
 
 async function openDay(day){
-  if(day < 1 || day > 12 || day !== currentOpenDay) return;
+  if(day < 1 || day > 12) return;
+  if(day!==currentOpenDay && !isRouteCompletedForUI(getTransferred())) return;
 
   const file = `den-${String(day).padStart(2,'0')}.html`;
   currentDayPage = day;
@@ -1071,6 +1531,13 @@ async function claimCode(code){
   return participantId;
 }
 async function loadRouteState(){
+  // TEST-ONLY: тестовый GitHub Pages стенд не зависит от общего current_day
+  // рабочего маршрута и всегда показывает День 13.
+  if(DAY13_TEST_SITE){
+    currentOpenDay=13;
+    return;
+  }
+
   const {data,error}=await supabaseClient.from('route_state').select('current_day').eq('id',1).maybeSingle();
   if(!error && data && data.current_day !== null && data.current_day !== undefined){
     const n=Number(data.current_day);
@@ -1088,10 +1555,22 @@ async function seedTransferredFromSavedEntries(){
     const {data,error}=await supabaseClient.rpc('get_completed_days',{p_code:currentCode});
     if(error) throw error;
     const transferred=getTransferred();
+    // Day 13 completion must never survive only in local cache.
+    // Clear cached 13 first; it will be re-added below only if Supabase confirms it.
+    transferred.delete(ASSEMBLY_DAY);
     for(const row of (data||[])){
       const d=Number(row.day_number ?? row.day ?? row);
-      if(Number.isFinite(d) && d>=1 && d<=12) transferred.add(d);
+      if(Number.isFinite(d) && d>=1 && d<=13) transferred.add(d);
     }
+
+    // TEST-ONLY: на отдельном стенде считаем Дни 1–12 пройденными,
+    // чтобы проверить Сборку сейчас, не меняя общий current_day и не создавая
+    // фиктивные записи 1–12 в Supabase. День 13 сюда НЕ добавляется:
+    // его завершение по-прежнему должно реально записаться через save_entry.
+    if(DAY13_TEST_SITE){
+      for(let d=1;d<=12;d++) transferred.add(d);
+    }
+
     setTransferred(transferred);
   }catch(e){ console.warn('get_completed_days failed',e); }
 }
@@ -1138,17 +1617,7 @@ if(wwEnterRouteButton){
 async function enterWithCode(code){
   gateBtn.disabled=true;gateError.textContent='';
   try{
-    let participantId;
-    try{
-      participantId = await claimCode(code);
-    }catch(firstErr){
-      if(firstErr.message==='not_found') throw firstErr;
-      // В браузере могла остаться старая/битая анонимная сессия —
-      // тихо сбрасываем её и пробуем войти ещё раз, один раз, без участия человека.
-      try{ await supabaseClient.auth.signOut(); }catch(e){}
-      participantId = await claimCode(code);
-    }
-    currentCode=code;localStorage.setItem(CODE_STORAGE_KEY,code);
+    await claimCode(code);currentCode=code;localStorage.setItem(CODE_STORAGE_KEY,code);
     await loadRouteState();
     await seedTransferredFromSavedEntries();
     gateOverlay.style.display='none';showThresholdOrFlower();
@@ -1189,11 +1658,18 @@ window.addEventListener('message',async(event)=>{
   }
 });
 
+center.addEventListener('click', onCenterActivate);
+center.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter' || e.key===' ' || e.key==='Spacebar'){
+    e.preventDefault();
+    onCenterActivate();
+  }
+});
+
 window.addEventListener('resize',()=>requestAnimationFrame(render));
 
-document.getElementById('switchCodeBtn').addEventListener('click', async ()=>{
+document.getElementById('switchCodeBtn').addEventListener('click',()=>{
   localStorage.removeItem(CODE_STORAGE_KEY);
-  try{ if(supabaseClient) await supabaseClient.auth.signOut(); }catch(e){}
   location.reload();
 });
 
