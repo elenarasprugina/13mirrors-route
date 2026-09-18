@@ -343,10 +343,29 @@ body{
   cursor:pointer;
   border-color:rgba(255,252,244,.98);
   box-shadow:
-    0 0 14px rgba(247,243,235,.22),
-    0 0 34px rgba(244,214,220,.14),
-    inset 0 0 10px rgba(247,243,235,.06);
-  animation:centerInvite 4.6s ease-in-out infinite;
+    0 0 18px rgba(247,243,235,.34),
+    0 0 46px rgba(244,214,220,.24),
+    inset 0 0 14px rgba(247,243,235,.10);
+  animation:centerInvite 3.8s ease-in-out infinite;
+}
+.center.active-center::before{
+  content:"";
+  position:absolute;
+  inset:15%;
+  border-radius:50%;
+  pointer-events:none;
+  background:radial-gradient(circle,
+    rgba(255,252,244,.72) 0%,
+    rgba(244,214,220,.34) 24%,
+    rgba(247,243,235,.12) 48%,
+    rgba(247,243,235,0) 74%);
+  filter:blur(5px);
+  opacity:.72;
+  animation:centerCoreInvite 3.8s ease-in-out infinite;
+}
+@keyframes centerCoreInvite{
+  0%,100%{opacity:.48;transform:scale(.92)}
+  50%{opacity:.9;transform:scale(1.08)}
 }
 @keyframes centerInvite{
   0%,100%{box-shadow:0 0 14px rgba(247,243,235,.22),0 0 34px rgba(244,214,220,.14),inset 0 0 10px rgba(247,243,235,.06);}
@@ -403,6 +422,12 @@ body{
      привязываться к истинным краям картинки, а не к краю экрана. */
   --assembly-img-h: min(100vh, calc(100vw * 1660 / 1244));
   --assembly-img-w: min(100vw, calc(100vh * 1244 / 1660));
+}
+.assembly-shell.primed{
+  display:flex;
+  opacity:0;
+  pointer-events:none;
+  background:rgba(16,19,26,0);
 }
 .assembly-shell.show{display:flex;opacity:1}
 .assembly-shell.media-phase{background:#10131a}
@@ -1032,7 +1057,7 @@ body{
       <div class="assembly-caption__keeper" id="assemblyKeeperLine">Увидимся за поворотом…</div>
     </div>
   </div>
-  <img class="assembly-center-logo" id="assemblyLogo" src="13mirrors_logo_rose_gold.png" alt="13 MIRRORS">
+  <img class="assembly-center-logo" id="assemblyLogo" src="13mirrors_logo_rose_gold.png?v=20260919b" alt="13 MIRRORS">
 </div>
 
 <script>
@@ -1046,8 +1071,10 @@ const SUPABASE_ANON_KEY = 'sb_publishable__oUSc-S0xZEDvWgcGubYxQ_F5KjbQ4j';
 const CODE_STORAGE_KEY = '13mirrors-participant-code';
 const THRESHOLD_SEEN_PREFIX = '13mirrors-threshold-seen:';
 const ASSEMBLY_DAY = 13;
-const ASSEMBLY_VIDEO_SRC = 'assembly-bloom-v3.mp4';
-const ASSEMBLY_FINAL_IMG_SRC = 'assembly-final-frame-v2.png';
+const ASSEMBLY_ASSET_VERSION = '20260919b';
+const ASSEMBLY_VIDEO_SRC = `assembly-bloom-v3.mp4?v=${ASSEMBLY_ASSET_VERSION}`;
+const ASSEMBLY_FINAL_IMG_SRC = `assembly-final-frame-v2.png?v=${ASSEMBLY_ASSET_VERSION}`;
+const ASSEMBLY_LOGO_SRC = `13mirrors_logo_rose_gold.png?v=${ASSEMBLY_ASSET_VERSION}`;
 
 // TEST-ONLY: отдельный GitHub Pages стенд для проверки Дня 13.
 // На рабочем сайте этот флаг всегда false.
@@ -1189,10 +1216,35 @@ function wait(ms){ return new Promise(resolve=>setTimeout(resolve,ms)); }
 function preloadAssemblyAssets(){
   if(assemblyPreloadStarted) return;
   assemblyPreloadStarted = true;
+
   assemblyVideo.setAttribute('preload','auto');
+  assemblyVideo.setAttribute('playsinline','');
+  assemblyVideo.muted = true;
+  assemblyVideo.defaultMuted = true;
+  assemblyVideo.playsInline = true;
   assemblyVideo.src = ASSEMBLY_VIDEO_SRC;
   assemblyVideo.load();
+
   assemblyFinalImg.src = ASSEMBLY_FINAL_IMG_SRC;
+  assemblyLogo.src = ASSEMBLY_LOGO_SRC;
+}
+
+function resetAssemblyOverlay(){
+  assemblyShell.classList.remove('show','media-phase','primed');
+  assemblyShell.setAttribute('aria-hidden','true');
+  assemblyRevealVeil.classList.remove('reveal');
+  assemblyFinalImg.classList.remove('show');
+  assemblyCaption.classList.remove('show');
+  assemblyLogo.classList.remove('show');
+  assemblyVideo.classList.remove('show','resolved');
+  try{
+    assemblyVideo.pause();
+    assemblyVideo.currentTime = 0;
+  }catch(e){}
+  stage.classList.remove('assembly-gathering');
+  center.classList.remove('assembly-burst');
+  assemblyRunning = false;
+  isAnimating = false;
 }
 
 // Мгновенно показывает финальный экран Сборки без анимации —
@@ -1226,19 +1278,79 @@ function fitAssemblyCaptionLines(){
 }
 
 function playAssemblyVideo(){
-  return new Promise(resolve=>{
-    let settled=false;
-    const finish=()=>{ if(settled)return; settled=true; assemblyVideo.removeEventListener('ended',onEnded); resolve(); };
-    const onEnded=()=>finish();
-    assemblyVideo.addEventListener('ended',onEnded);
-    try{ assemblyVideo.currentTime = 0; }catch(e){}
-    const playPromise = assemblyVideo.play();
-    assemblyVideo.classList.add('show');
-    if(playPromise && playPromise.catch) playPromise.catch(()=>finish());
-    // Защита: если видео не пришлёт 'ended' (ошибка декодирования и т.п.),
-    // сценарий всё равно должен дойти до финального кадра.
-    setTimeout(finish, 17000);
-  });
+  let startedResolve;
+  let finishedResolve;
+  let startedSettled = false;
+  let finishedSettled = false;
+
+  const started = new Promise(resolve => { startedResolve = resolve; });
+  const finished = new Promise(resolve => { finishedResolve = resolve; });
+
+  const settleStarted = (ok) => {
+    if(startedSettled) return;
+    startedSettled = true;
+    startedResolve(ok);
+  };
+  const settleFinished = (ok) => {
+    if(finishedSettled) return;
+    finishedSettled = true;
+    finishedResolve(ok);
+  };
+
+  const cleanup = () => {
+    assemblyVideo.removeEventListener('playing', onPlaying);
+    assemblyVideo.removeEventListener('ended', onEnded);
+    assemblyVideo.removeEventListener('error', onError);
+  };
+  const onPlaying = () => settleStarted(true);
+  const onEnded = () => {
+    settleStarted(true);
+    settleFinished(true);
+    cleanup();
+  };
+  const onError = () => {
+    console.error('assembly video media error', assemblyVideo.error);
+    settleStarted(false);
+    settleFinished(false);
+    cleanup();
+  };
+
+  assemblyVideo.addEventListener('playing', onPlaying);
+  assemblyVideo.addEventListener('ended', onEnded);
+  assemblyVideo.addEventListener('error', onError);
+
+  try{
+    assemblyVideo.muted = true;
+    assemblyVideo.defaultMuted = true;
+    assemblyVideo.playsInline = true;
+    assemblyVideo.currentTime = 0;
+
+    const p = assemblyVideo.play();
+    if(p && p.catch){
+      p.catch(err => {
+        console.error('assembly video play() failed', err);
+        settleStarted(false);
+        settleFinished(false);
+        cleanup();
+      });
+    }
+  }catch(err){
+    console.error('assembly video start failed', err);
+    settleStarted(false);
+    settleFinished(false);
+    cleanup();
+  }
+
+  setTimeout(() => settleStarted(false), 6000);
+  setTimeout(() => {
+    if(!finishedSettled){
+      console.error('assembly video timeout');
+      settleFinished(false);
+      cleanup();
+    }
+  }, 20000);
+
+  return { started, finished };
 }
 
 async function persistAssemblyCompletion(){
@@ -1262,14 +1374,19 @@ async function startAssembly(){
 
   preloadAssemblyAssets();
 
+  assemblyShell.classList.add('primed');
+  assemblyShell.setAttribute('aria-hidden','false');
+  const playback = playAssemblyVideo();
+
   // 1) Схематичный цветок собирается в сердцевину.
   stage.classList.add('assembly-gathering');
   center.classList.add('assembly-burst');
   await wait(prefersReducedMotion ? 260 : 820);
 
-  // 2) Включаем живой цветок и очень мягкое круговое проявление без жёсткой границы.
+  // 2) Показываем живой цветок. Видео уже было запущено внутри клика;
+  // теперь возвращаем его к началу, не вызывая play() повторно.
+  assemblyShell.classList.remove('primed');
   assemblyShell.classList.add('show','media-phase');
-  assemblyShell.setAttribute('aria-hidden','false');
 
   assemblyFinalImg.classList.remove('show');
   assemblyCaption.classList.remove('show');
@@ -1278,7 +1395,10 @@ async function startAssembly(){
   assemblyVideo.classList.remove('resolved');
   assemblyVideo.classList.add('show');
 
-  const videoFinished = playAssemblyVideo();
+  const videoStarted = await playback.started;
+  if(videoStarted){
+    try{ assemblyVideo.currentTime = 0; }catch(e){}
+  }
 
   await wait(prefersReducedMotion ? 40 : 90);
   stage.classList.remove('assembly-gathering');
@@ -1293,19 +1413,24 @@ async function startAssembly(){
   fitAssemblyCaptionLines();
   assemblyCaption.classList.add('show');
 
-  // 4) Финальная точка — фирменный знак 13 MIRRORS в центре цветка.
+  // 4) Финальная точка — знак 13 MIRRORS справа снизу.
   await wait(prefersReducedMotion ? 100 : 420);
   assemblyLogo.classList.add('show');
 
-  await videoFinished;
+  const videoCompleted = await playback.finished;
 
-  // 4) Последний кадр остаётся, подпись и логотип остаются поверх.
+  // Финальный кадр остаётся в любом случае как визуальный fallback.
   assemblyFinalImg.classList.add('show');
   await wait(prefersReducedMotion ? 260 : 520);
   assemblyVideo.classList.remove('show','resolved');
   assemblyVideo.pause();
 
-  await persistAssemblyCompletion();
+  // Day 13 сохраняем ТОЛЬКО если видео реально запустилось и дошло до ended.
+  if(videoStarted && videoCompleted){
+    await persistAssemblyCompletion();
+  }else{
+    console.error('Day 13 NOT saved because assembly video did not complete');
+  }
 
   assemblyRunning = false;
   isAnimating = false;
@@ -1620,6 +1745,7 @@ async function enterWithCode(code){
     await claimCode(code);currentCode=code;localStorage.setItem(CODE_STORAGE_KEY,code);
     await loadRouteState();
     await seedTransferredFromSavedEntries();
+    resetAssemblyOverlay();
     gateOverlay.style.display='none';showThresholdOrFlower();
   }catch(e){
     gateError.textContent=e.message==='not_found'?'Такой код не найден. Проверьте, пожалуйста, и попробуйте ещё раз.':'Не удалось войти. Попробуйте ещё раз.';
@@ -1668,7 +1794,15 @@ center.addEventListener('keydown', (e)=>{
 
 window.addEventListener('resize',()=>requestAnimationFrame(render));
 
+window.addEventListener('pageshow',(event)=>{
+  if(event.persisted){
+    resetAssemblyOverlay();
+    if(currentCode) requestAnimationFrame(render);
+  }
+});
+
 document.getElementById('switchCodeBtn').addEventListener('click',()=>{
+  resetAssemblyOverlay();
   localStorage.removeItem(CODE_STORAGE_KEY);
   location.reload();
 });
