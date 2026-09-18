@@ -1057,7 +1057,7 @@ body{
       <div class="assembly-caption__keeper" id="assemblyKeeperLine">Увидимся за поворотом…</div>
     </div>
   </div>
-  <img class="assembly-center-logo" id="assemblyLogo" src="13mirrors_logo_rose_gold.png?v=20260919b" alt="13 MIRRORS">
+  <img class="assembly-center-logo" id="assemblyLogo" src="13mirrors_logo_rose_gold.png?v=20260919c" alt="13 MIRRORS">
 </div>
 
 <script>
@@ -1071,7 +1071,8 @@ const SUPABASE_ANON_KEY = 'sb_publishable__oUSc-S0xZEDvWgcGubYxQ_F5KjbQ4j';
 const CODE_STORAGE_KEY = '13mirrors-participant-code';
 const THRESHOLD_SEEN_PREFIX = '13mirrors-threshold-seen:';
 const ASSEMBLY_DAY = 13;
-const ASSEMBLY_ASSET_VERSION = '20260919b';
+const WW_BUILD_ID = 'WW13-NIGHTFIX-20260919-01';
+const ASSEMBLY_ASSET_VERSION = '20260919c';
 const ASSEMBLY_VIDEO_SRC = `assembly-bloom-v3.mp4?v=${ASSEMBLY_ASSET_VERSION}`;
 const ASSEMBLY_FINAL_IMG_SRC = `assembly-final-frame-v2.png?v=${ASSEMBLY_ASSET_VERSION}`;
 const ASSEMBLY_LOGO_SRC = `13mirrors_logo_rose_gold.png?v=${ASSEMBLY_ASSET_VERSION}`;
@@ -1367,8 +1368,9 @@ async function persistAssemblyCompletion(){
 }
 
 async function startAssembly(){
-  const transferred = getTransferred();
-  if(assemblyRunning || isAnimating || !isAssemblyReady(transferred)) return;
+  // Вход сюда разрешается только после свежей проверки Дня 13 в onCenterActivate().
+  // Не блокируем запуск устаревшим localStorage/transferred.
+  if(assemblyRunning || isAnimating || currentOpenDay !== ASSEMBLY_DAY) return;
   assemblyRunning = true;
   isAnimating = true;
 
@@ -1436,12 +1438,46 @@ async function startAssembly(){
   isAnimating = false;
 }
 
-function onCenterActivate(){
+async function onCenterActivate(){
   if(isAnimating || assemblyRunning) return;
-  if(currentOpenDay !== ASSEMBLY_DAY) return;
+
+  // Перед каждым кликом перечитываем общий current_day из Supabase.
+  // Так центр не зависит от того, когда участник открыл страницу относительно админки.
+  await loadRouteState();
+  if(currentOpenDay !== ASSEMBLY_DAY){
+    render();
+    updateDebugBadge('center: day13 is not open');
+    return;
+  }
+
+  // Для решения "финал или новая анимация" проверяем сам Day 13 напрямую в Supabase,
+  // а не доверяем localStorage. Это защищает от старых тестовых кэшей.
+  let completed = false;
+  try{
+    const row = await loadExistingEntry(ASSEMBLY_DAY);
+    completed = !!row
+      && String(row.chosen_card || '').toLowerCase() === 'assembly'
+      && String(row.reflection_text || '').toLowerCase() === 'completed';
+  }catch(e){
+    console.warn('Fresh Day 13 check failed; falling back to cached state', e);
+    completed = isAssemblyCompletedForUI(getTransferred());
+  }
+
   const transferred = getTransferred();
-  if(isRouteCompletedForUI(transferred)){ renderAssemblyFinalState(); return; }
-  if(isAssemblyReady(transferred)){ startAssembly(); }
+  if(completed){
+    transferred.add(ASSEMBLY_DAY);
+    setTransferred(transferred);
+    renderAssemblyFinalState();
+    updateDebugBadge('center: completed -> final');
+    return;
+  }
+
+  // Если Supabase не подтверждает завершение, старый локальный 13 не имеет права блокировать анимацию.
+  transferred.delete(ASSEMBLY_DAY);
+  setTransferred(transferred);
+  render();
+  updateDebugBadge('center: start assembly');
+  await startAssembly();
 }
 
 function computeGeometry(){
@@ -1486,6 +1522,20 @@ function makeStoredLight(day){
   light.style.left=(50+Math.cos(angle)*r)+'%';light.style.top=(50+Math.sin(angle)*r)+'%';
   return light;
 }
+
+const DEBUG_MODE = new URLSearchParams(location.search).has('debug');
+let debugBadge = null;
+function updateDebugBadge(note=''){
+  if(!DEBUG_MODE) return;
+  if(!debugBadge){
+    debugBadge=document.createElement('div');
+    debugBadge.style.cssText='position:fixed;left:8px;bottom:8px;z-index:9999;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.78);color:#fff;font:11px/1.3 monospace;pointer-events:none;max-width:92vw';
+    document.body.appendChild(debugBadge);
+  }
+  const transferred=getTransferred();
+  debugBadge.textContent=`${WW_BUILD_ID} | current_day=${currentOpenDay} | local13=${transferred.has(13)?1:0}${note?' | '+note:''}`;
+}
+console.info('13 MIRRORS build', WW_BUILD_ID);
 
 function updateRouteScreenInfo(){
   const info = DAY_INFO[currentOpenDay];
@@ -1538,11 +1588,14 @@ function render(){
   // День 13 — центр (Сборка). Активируется, когда ведущая вручную открыла День 13;
   // индивидуальные пропуски Дней 1–12 не блокируют Сборку. После завершения
   // центр переходит в спокойное assembly-done.
-  const assemblyReady = isAssemblyReady(transferred);
-  const assemblyDone = isRouteCompletedForUI(transferred);
+  const day13Open = currentOpenDay === ASSEMBLY_DAY;
+  const assemblyDone = day13Open && isAssemblyCompletedForUI(transferred);
+  const assemblyReady = day13Open && !assemblyDone;
   center.classList.toggle('active-center', assemblyReady);
   center.classList.toggle('assembly-done', assemblyDone);
-  if(assemblyReady || assemblyDone){
+  if(day13Open){
+    // На Дне 13 центр всегда является кнопкой. Свежая проверка завершения
+    // выполняется непосредственно при клике в onCenterActivate().
     center.setAttribute('tabindex','0');
     center.setAttribute('role','button');
     center.setAttribute('aria-label', assemblyDone ? 'Путь пройден. Открыть завершение.' : 'Собрать цветок');
@@ -1552,6 +1605,7 @@ function render(){
     center.setAttribute('aria-label','Центр цветка');
   }
   if(assemblyReady) preloadAssemblyAssets();
+  updateDebugBadge();
 }
 
 async function openDay(day){
@@ -1656,21 +1710,21 @@ async function claimCode(code){
   return participantId;
 }
 async function loadRouteState(){
-  // TEST-ONLY: тестовый GitHub Pages стенд не зависит от общего current_day
-  // рабочего маршрута и всегда показывает День 13.
   if(DAY13_TEST_SITE){
     currentOpenDay=13;
-    return;
+    return currentOpenDay;
   }
 
   const {data,error}=await supabaseClient.from('route_state').select('current_day').eq('id',1).maybeSingle();
-  if(!error && data && data.current_day !== null && data.current_day !== undefined){
+  if(error){
+    console.warn('route_state read failed', error);
+    return currentOpenDay;
+  }
+  if(data && data.current_day !== null && data.current_day !== undefined){
     const n=Number(data.current_day);
     if(Number.isFinite(n) && n>=0 && n<=13) currentOpenDay=n;
-    return;
   }
-  // Если состояние прочитать не удалось, оставляем маршрут без активного дня.
-  currentOpenDay=0;
+  return currentOpenDay;
 }
 
 async function seedTransferredFromSavedEntries(){
@@ -1794,6 +1848,21 @@ center.addEventListener('keydown', (e)=>{
 
 window.addEventListener('resize',()=>requestAnimationFrame(render));
 
+async function refreshRouteStateAndRender(){
+  if(!currentCode || assemblyRunning || isAnimating) return;
+  const before=currentOpenDay;
+  await loadRouteState();
+  if(before!==currentOpenDay){
+    console.info('route day changed', before, '->', currentOpenDay);
+    render();
+  }else{
+    updateDebugBadge();
+  }
+}
+window.addEventListener('focus',()=>{ refreshRouteStateAndRender(); });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) refreshRouteStateAndRender(); });
+setInterval(refreshRouteStateAndRender, 8000);
+
 window.addEventListener('pageshow',(event)=>{
   if(event.persisted){
     resetAssemblyOverlay();
@@ -1801,9 +1870,12 @@ window.addEventListener('pageshow',(event)=>{
   }
 });
 
-document.getElementById('switchCodeBtn').addEventListener('click',()=>{
+document.getElementById('switchCodeBtn').addEventListener('click',async()=>{
   resetAssemblyOverlay();
   localStorage.removeItem(CODE_STORAGE_KEY);
+  // Код участника привязан к анонимной Supabase-сессии. Для реального переключения
+  // участника выходим и из auth, иначе другой код может оставаться недоступным.
+  try{ if(supabaseClient) await supabaseClient.auth.signOut(); }catch(e){ console.warn('signOut failed',e); }
   location.reload();
 });
 
